@@ -478,9 +478,116 @@ async def process_template_row(row: Dict[str, Any], action: str) -> Dict[str, An
         result["errors"].append(f"Erro ao processar linha: {str(e)}")
         return result
 
-# Routes
-@api_router.get("/")
-async def root():
+async def get_template_facets() -> TemplateFacets:
+    """Get available facets for filtering"""
+    try:
+        # Get distinct platforms
+        platforms = await db.templates.distinct("platform", {"status": "published"})
+        
+        # Get distinct categories from all templates
+        categories_pipeline = [
+            {"$match": {"status": "published"}},
+            {"$unwind": "$categories"},
+            {"$group": {"_id": "$categories"}},
+            {"$sort": {"_id": 1}}
+        ]
+        categories_result = await db.templates.aggregate(categories_pipeline).to_list(None)
+        categories = [item["_id"] for item in categories_result if item["_id"]]
+        
+        # Get distinct tools from all templates
+        tools_pipeline = [
+            {"$match": {"status": "published"}},
+            {"$unwind": "$tools"},
+            {"$group": {"_id": "$tools"}},
+            {"$sort": {"_id": 1}}
+        ]
+        tools_result = await db.templates.aggregate(tools_pipeline).to_list(None)
+        tools = [item["_id"] for item in tools_result if item["_id"]]
+        
+        return TemplateFacets(
+            platforms=sorted(platforms) if platforms else [],
+            categories=categories,
+            tools=tools
+        )
+    except Exception as e:
+        logger.error(f"Error getting facets: {str(e)}")
+        return TemplateFacets(platforms=[], categories=[], tools=[])
+
+async def get_templates_with_filters(
+    search: Optional[str] = None,
+    platform: Optional[str] = None,
+    category: Optional[str] = None,
+    tool: Optional[str] = None,
+    page: int = 1,
+    page_size: int = 12
+) -> PaginatedTemplateResponse:
+    """Get templates with filtering and pagination"""
+    
+    # Build filter query
+    filter_query = {"status": "published"}
+    
+    # Add platform filter
+    if platform:
+        filter_query["platform"] = platform
+    
+    # Add category filter
+    if category:
+        filter_query["categories"] = {"$in": [category]}
+    
+    # Add tool filter  
+    if tool:
+        filter_query["tools"] = {"$in": [tool]}
+    
+    # Add search filter
+    if search:
+        search_regex = {"$regex": search, "$options": "i"}
+        filter_query["$or"] = [
+            {"title": search_regex},
+            {"description": search_regex},
+            {"tags": search_regex}
+        ]
+    
+    try:
+        # Get total count
+        total = await db.templates.count_documents(filter_query)
+        
+        # Calculate pagination
+        skip = (page - 1) * page_size
+        total_pages = (total + page_size - 1) // page_size
+        
+        # Get templates with pagination
+        templates_cursor = db.templates.find(filter_query).sort("downloads_count", -1).skip(skip).limit(page_size)
+        templates = await templates_cursor.to_list(page_size)
+        
+        # Convert to Template objects
+        template_items = [Template(**template) for template in templates]
+        
+        # Get facets
+        facets = await get_template_facets()
+        
+        return PaginatedTemplateResponse(
+            items=template_items,
+            total=total,
+            page=page,
+            page_size=page_size,
+            total_pages=total_pages,
+            facets={
+                "platforms": facets.platforms,
+                "categories": facets.categories,
+                "tools": facets.tools
+            }
+        )
+        
+    except Exception as e:
+        logger.error(f"Error getting templates: {str(e)}")
+        return PaginatedTemplateResponse(
+            items=[],
+            total=0,
+            page=page,
+            page_size=page_size,
+            total_pages=0,
+            facets={"platforms": [], "categories": [], "tools": []}
+        )
     return {"message": "AutomaçãoHub API - Biblioteca de Automações"}
 
 # CSV Import endpoint
