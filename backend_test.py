@@ -224,6 +224,180 @@ class FlowLibAPITester:
         )
         return success
 
+    def test_csv_import_basic(self):
+        """Test CSV import with basic test file"""
+        print("\n🔍 Testing CSV Import - Basic Import...")
+        
+        try:
+            with open('/app/test-import.csv', 'rb') as f:
+                files = {'file': ('test-import.csv', f, 'text/csv')}
+                response = requests.post(f"{self.api_url}/import/templates", files=files)
+                
+                success = response.status_code == 200
+                if success:
+                    data = response.json()
+                    expected_keys = ['inserted', 'updated', 'deleted', 'errors']
+                    has_all_keys = all(key in data for key in expected_keys)
+                    
+                    if has_all_keys:
+                        print(f"   📊 Import Results: Inserted: {data['inserted']}, Updated: {data['updated']}, Deleted: {data['deleted']}, Errors: {len(data['errors'])}")
+                        if data['errors']:
+                            print(f"   ⚠️  Errors: {data['errors']}")
+                        success = data['inserted'] > 0 or data['updated'] > 0  # Should have some successful operations
+                    else:
+                        success = False
+                        
+                self.log_test("CSV Import - Basic", success, f"Status: {response.status_code}, Response: {response.text[:200] if not success else 'OK'}")
+                return success
+                
+        except FileNotFoundError:
+            self.log_test("CSV Import - Basic", False, "test-import.csv file not found")
+            return False
+        except Exception as e:
+            self.log_test("CSV Import - Basic", False, str(e))
+            return False
+
+    def test_csv_import_update_delete(self):
+        """Test CSV import with update and delete operations"""
+        print("\n🔍 Testing CSV Import - Update & Delete...")
+        
+        try:
+            with open('/app/test-update.csv', 'rb') as f:
+                files = {'file': ('test-update.csv', f, 'text/csv')}
+                response = requests.post(f"{self.api_url}/import/templates", files=files)
+                
+                success = response.status_code == 200
+                if success:
+                    data = response.json()
+                    print(f"   📊 Update Results: Inserted: {data['inserted']}, Updated: {data['updated']}, Deleted: {data['deleted']}, Errors: {len(data['errors'])}")
+                    if data['errors']:
+                        print(f"   ⚠️  Errors: {data['errors']}")
+                        
+                self.log_test("CSV Import - Update/Delete", success, f"Status: {response.status_code}")
+                return success
+                
+        except FileNotFoundError:
+            self.log_test("CSV Import - Update/Delete", False, "test-update.csv file not found")
+            return False
+        except Exception as e:
+            self.log_test("CSV Import - Update/Delete", False, str(e))
+            return False
+
+    def test_csv_import_validation_errors(self):
+        """Test CSV import with validation errors"""
+        print("\n🔍 Testing CSV Import - Validation Errors...")
+        
+        try:
+            with open('/app/test-errors.csv', 'rb') as f:
+                files = {'file': ('test-errors.csv', f, 'text/csv')}
+                response = requests.post(f"{self.api_url}/import/templates", files=files)
+                
+                success = response.status_code == 200
+                if success:
+                    data = response.json()
+                    print(f"   📊 Error Test Results: Inserted: {data['inserted']}, Updated: {data['updated']}, Deleted: {data['deleted']}, Errors: {len(data['errors'])}")
+                    print(f"   ⚠️  Expected Errors: {data['errors']}")
+                    
+                    # Should have errors for validation failures
+                    success = len(data['errors']) > 0
+                        
+                self.log_test("CSV Import - Validation Errors", success, f"Status: {response.status_code}, Errors found: {len(data.get('errors', [])) if success else 0}")
+                return success
+                
+        except FileNotFoundError:
+            self.log_test("CSV Import - Validation Errors", False, "test-errors.csv file not found")
+            return False
+        except Exception as e:
+            self.log_test("CSV Import - Validation Errors", False, str(e))
+            return False
+
+    def test_csv_import_invalid_file(self):
+        """Test CSV import with invalid file"""
+        print("\n🔍 Testing CSV Import - Invalid File...")
+        
+        try:
+            # Test with non-CSV file
+            files = {'file': ('test.txt', b'not a csv file', 'text/plain')}
+            response = requests.post(f"{self.api_url}/import/templates", files=files)
+            
+            # Should return 400 for non-CSV file
+            success = response.status_code == 400
+            self.log_test("CSV Import - Invalid File Type", success, f"Status: {response.status_code}")
+            return success
+            
+        except Exception as e:
+            self.log_test("CSV Import - Invalid File Type", False, str(e))
+            return False
+
+    def test_template_by_slug(self):
+        """Test template by slug endpoint"""
+        print("\n🔍 Testing Template by Slug Endpoint...")
+        
+        # First get a template to test with
+        try:
+            response = requests.get(f"{self.api_url}/templates")
+            if response.status_code == 200 and response.json():
+                template = response.json()[0]
+                slug = template.get('slug')
+                
+                if slug:
+                    # Test getting template by slug
+                    slug_response = requests.get(f"{self.api_url}/templates/slug/{slug}")
+                    success = slug_response.status_code == 200
+                    self.log_test(f"Get template by slug ({slug})", success, f"Status: {slug_response.status_code}")
+                    return success
+                else:
+                    self.log_test("Get template by slug", False, "No slug found in template")
+                    return False
+            else:
+                self.log_test("Get template by slug", False, "No templates available for testing")
+                return False
+        except Exception as e:
+            self.log_test("Get template by slug", False, str(e))
+            return False
+
+    def verify_imported_data(self):
+        """Verify that imported data appears correctly"""
+        print("\n🔍 Verifying Imported Data...")
+        
+        try:
+            # Check if imported templates exist
+            test_slugs = ['chatbot-vendas-ia', 'automacao-email-marketing']
+            success_count = 0
+            
+            for slug in test_slugs:
+                try:
+                    response = requests.get(f"{self.api_url}/templates/slug/{slug}")
+                    if response.status_code == 200:
+                        template = response.json()
+                        
+                        # Verify new fields are present
+                        new_fields = ['slug', 'author_email', 'tutorial_url', 'external_id', 'categories', 'tools']
+                        has_new_fields = all(field in template for field in new_fields)
+                        
+                        # Verify categories and tools are arrays
+                        categories_valid = isinstance(template.get('categories', []), list)
+                        tools_valid = isinstance(template.get('tools', []), list)
+                        
+                        success = has_new_fields and categories_valid and tools_valid
+                        self.log_test(f"Verify imported template ({slug})", success, 
+                                    f"New fields: {has_new_fields}, Categories array: {categories_valid}, Tools array: {tools_valid}")
+                        
+                        if success:
+                            success_count += 1
+                            print(f"   📋 Template '{template['title']}' has {len(template['categories'])} categories and {len(template['tools'])} tools")
+                    else:
+                        self.log_test(f"Verify imported template ({slug})", False, f"Template not found (Status: {response.status_code})")
+                        
+                except Exception as e:
+                    self.log_test(f"Verify imported template ({slug})", False, str(e))
+            
+            return success_count > 0
+                    
+        except Exception as e:
+            self.log_test("Verify Imported Data", False, str(e))
+            return False
+
 def main():
     print("🚀 Starting FlowLib API Tests")
     print("=" * 50)
