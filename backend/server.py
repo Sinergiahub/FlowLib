@@ -286,6 +286,103 @@ def validate_template_data(row: Dict[str, Any]) -> List[str]:
     
     return errors
 
+def convert_google_sheets_url(sheet_url: str) -> str:
+    """Convert Google Sheets URL to CSV export URL"""
+    if 'docs.google.com/spreadsheets' not in sheet_url:
+        raise ValueError("URL deve ser um Google Sheets válido")
+    
+    # Extract sheet ID from various Google Sheets URL formats
+    if '/edit' in sheet_url:
+        sheet_id = sheet_url.split('/d/')[1].split('/edit')[0]
+    elif '/d/' in sheet_url:
+        sheet_id = sheet_url.split('/d/')[1].split('/')[0]
+    else:
+        raise ValueError("Formato de URL do Google Sheets inválido")
+    
+    # Return CSV export URL
+    return f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv"
+
+async def fetch_csv_from_url(url: str) -> str:
+    """Fetch CSV content from URL"""
+    try:
+        response = requests.get(url, timeout=30)
+        response.raise_for_status()
+        return response.text
+    except requests.exceptions.RequestException as e:
+        raise ValueError(f"Erro ao buscar CSV da URL: {str(e)}")
+
+async def preview_template_row(row: Dict[str, Any], action: str, line_number: int) -> PreviewRow:
+    """Preview a single template row without saving"""
+    
+    slug = safe_str_strip(row.get('slug', ''))
+    title = safe_str_strip(row.get('title', ''))
+    
+    preview_row = PreviewRow(
+        line_number=line_number,
+        slug=slug,
+        title=title,
+        action=action,
+        status="error",
+        message="",
+        data={}
+    )
+    
+    try:
+        if not slug:
+            preview_row.message = "Slug é obrigatório"
+            return preview_row
+        
+        if action == "delete":
+            # Check if template exists for deletion
+            existing = await db.templates.find_one({"slug": slug})
+            if existing:
+                preview_row.status = "delete"
+                preview_row.message = f"Template '{title or slug}' será deletado"
+            else:
+                preview_row.message = f"Template com slug '{slug}' não encontrado para exclusão"
+            return preview_row
+        
+        # Validate data for upsert
+        validation_errors = validate_template_data(row)
+        if validation_errors:
+            preview_row.message = "; ".join(validation_errors)
+            return preview_row
+        
+        # Check if template exists
+        existing = await db.templates.find_one({"slug": slug})
+        
+        # Prepare preview data
+        preview_data = {
+            "slug": slug,
+            "title": title,
+            "platform": safe_str_strip(row.get('platform', '')),
+            "author_name": safe_str_strip_or_none(row.get('author_name')),
+            "categories": parse_pipe_separated(row.get('categories', '')),
+            "tools": parse_pipe_separated(row.get('tools', '')),
+        }
+        
+        # Add rating and downloads if present
+        if 'rating_avg' in row and row['rating_avg'] is not None and not pd.isna(row['rating_avg']):
+            preview_data["rating_avg"] = float(row['rating_avg'])
+        
+        if 'downloads_count' in row and row['downloads_count'] is not None and not pd.isna(row['downloads_count']):
+            preview_data["downloads_count"] = int(row['downloads_count'])
+        
+        preview_row.data = preview_data
+        
+        if existing:
+            preview_row.status = "update"
+            preview_row.message = f"Template '{title}' será atualizado"
+        else:
+            preview_row.status = "insert"
+            preview_row.message = f"Template '{title}' será inserido"
+        
+        return preview_row
+        
+    except Exception as e:
+        preview_row.message = f"Erro ao processar linha: {str(e)}"
+        return preview_row
+
 async def process_template_row(row: Dict[str, Any], action: str) -> Dict[str, Any]:
     """Process a single template row"""
     result = {"success": False, "action": action, "errors": []}
