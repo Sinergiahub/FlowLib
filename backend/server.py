@@ -109,6 +109,23 @@ class ImportReport(BaseModel):
     deleted: int = 0
     errors: List[str] = []
 
+class PreviewRow(BaseModel):
+    line_number: int
+    slug: str
+    title: str
+    action: str
+    status: str  # insert|update|delete|error
+    message: str
+    data: Dict[str, Any] = {}
+
+class PreviewReport(BaseModel):
+    total_rows: int = 0
+    insert_count: int = 0
+    update_count: int = 0
+    delete_count: int = 0
+    error_count: int = 0
+    rows: List[PreviewRow] = []
+
 # Initialize collections and sample data
 @app.on_event("startup")
 async def startup_db():
