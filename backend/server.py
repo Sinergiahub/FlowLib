@@ -537,6 +537,111 @@ async def import_templates(file: UploadFile = File(...)):
         logger.error(f"Erro inesperado no import: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erro interno do servidor: {str(e)}")
 
+# CSV Import Preview endpoint
+@api_router.post("/import/preview", response_model=PreviewReport)
+async def preview_import(
+    file: Optional[UploadFile] = File(None),
+    sheet_url: Optional[str] = Form(None)
+):
+    """Preview CSV import without saving data"""
+    
+    if not file and not sheet_url:
+        raise HTTPException(status_code=400, detail="Deve fornecer um arquivo CSV ou URL do Google Sheets")
+    
+    if file and sheet_url:
+        raise HTTPException(status_code=400, detail="Forneça apenas um arquivo CSV ou URL, não ambos")
+    
+    report = PreviewReport()
+    
+    try:
+        # Get CSV content
+        if file:
+            if not file.filename.endswith('.csv'):
+                raise HTTPException(status_code=400, detail="Arquivo deve ser um CSV")
+            
+            content = await file.read()
+            csv_content = content.decode('utf-8')
+        else:
+            # Handle Google Sheets URL
+            try:
+                csv_export_url = convert_google_sheets_url(sheet_url)
+                csv_content = await fetch_csv_from_url(csv_export_url)
+            except ValueError as e:
+                raise HTTPException(status_code=400, detail=str(e))
+        
+        # Parse CSV
+        df = pd.read_csv(StringIO(csv_content))
+        
+        # Validate required columns
+        required_columns = ['action', 'slug']
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        if missing_columns:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Colunas obrigatórias ausentes: {', '.join(missing_columns)}"
+            )
+        
+        report.total_rows = len(df)
+        
+        # Preview each row
+        for index, row in df.iterrows():
+            try:
+                action = str(row.get('action', '')).strip().lower()
+                line_number = index + 2  # +2 because CSV starts at line 1 and we skip header
+                
+                if action not in ['upsert', 'delete']:
+                    preview_row = PreviewRow(
+                        line_number=line_number,
+                        slug=safe_str_strip(row.get('slug', '')),
+                        title=safe_str_strip(row.get('title', '')),
+                        action=action,
+                        status="error",
+                        message=f"Ação inválida '{action}' (deve ser 'upsert' ou 'delete')"
+                    )
+                    report.rows.append(preview_row)
+                    report.error_count += 1
+                    continue
+                
+                # Preview the row
+                preview_row = await preview_template_row(row.to_dict(), action, line_number)
+                report.rows.append(preview_row)
+                
+                # Update counters
+                if preview_row.status == "insert":
+                    report.insert_count += 1
+                elif preview_row.status == "update":
+                    report.update_count += 1
+                elif preview_row.status == "delete":
+                    report.delete_count += 1
+                else:
+                    report.error_count += 1
+                        
+            except Exception as e:
+                preview_row = PreviewRow(
+                    line_number=index + 2,
+                    slug=safe_str_strip(row.get('slug', '')),
+                    title=safe_str_strip(row.get('title', '')),
+                    action=action if 'action' in locals() else 'unknown',
+                    status="error",
+                    message=f"Erro inesperado: {str(e)}"
+                )
+                report.rows.append(preview_row)
+                report.error_count += 1
+        
+        logger.info(f"Preview completed: {report.total_rows} rows, {report.insert_count} insert, {report.update_count} update, {report.delete_count} delete, {report.error_count} errors")
+        
+        return report
+        
+    except pd.errors.EmptyDataError:
+        raise HTTPException(status_code=400, detail="Arquivo CSV está vazio")
+    except pd.errors.ParserError as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao fazer parse do CSV: {str(e)}")
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=400, detail="Erro de codificação. Arquivo deve estar em UTF-8")
+    except Exception as e:
+        logger.error(f"Erro inesperado no preview: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro interno do servidor: {str(e)}")
+
 # Existing endpoints with updated schema
 @api_router.get("/templates", response_model=List[Template])
 async def get_templates(
