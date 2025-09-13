@@ -825,7 +825,8 @@ async def get_categories():
 @api_router.get("/tools", response_model=List[Tool])
 async def get_tools():
     tools = await db.tools.find().to_list(100)
-    return [Tool(**tool) for tool in tools]
+    # Convert MongoDB documents to Tool objects, excluding _id field
+    return [Tool(**{k: v for k, v in tool.items() if k != '_id'}) for tool in tools]
 
 @api_router.get("/featured", response_model=List[Template])
 async def get_featured_templates():
