@@ -258,7 +258,7 @@ const AdminImport = () => {
               disabled={loading || (!selectedFile && !sheetUrl) || !previewData}
               className="flex items-center gap-2 px-6 py-3 bg-[#ff6b35] hover:bg-[#e55a2b] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
             >
-              <Download2 size={16} />
+              <Download size={16} />
               {loading ? 'Importando...' : 'Importar'}
             </button>
           </div>
