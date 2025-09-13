@@ -48,8 +48,85 @@ const gptAgents = [
   }
 ];
 
-// Header Component
-const Header = ({ onSearch, searchTerm }) => {
+// Agent Card Component
+const AgentCard = ({ agent }) => {
+  const handleAgentClick = (agentId, gptUrl) => {
+    // Optional: Track click event
+    try {
+      // Simple analytics tracking (you can replace with your preferred analytics)
+      console.log(`Agent clicked: ${agentId}`);
+      
+      // Optional: Send to analytics endpoint
+      // axios.post(`${API}/analytics/agent-click`, { agentId, timestamp: new Date() });
+    } catch (error) {
+      console.error('Error tracking agent click:', error);
+    }
+
+    // Open GPT in new tab
+    if (gptUrl) {
+      window.open(gptUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  // Don't render if no GPT URL
+  if (!agent.gpt_url) {
+    return null;
+  }
+
+  return (
+    <div className="agent-card">
+      <div className="agent-banner">
+        <img src={agent.banner_url} alt={agent.title} />
+        <div className="agent-overlay"></div>
+      </div>
+      
+      <div className="agent-content">
+        <h3 className="agent-title">{agent.title}</h3>
+        <p className="agent-description">{agent.description}</p>
+        
+        <button 
+          className="agent-button"
+          onClick={() => handleAgentClick(agent.id, agent.gpt_url)}
+        >
+          <Bot size={16} />
+          Abrir no ChatGPT
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// GPT Agents Section
+const AgentsSection = () => {
+  return (
+    <section className="agents-section">
+      <div className="container">
+        <div className="agents-header">
+          <h2 className="agents-title">
+            🤖 Dobre seus Resultados com <span className="highlight">Agentes GPT</span>
+          </h2>
+          <p className="agents-subtitle">
+            Baixe nossos templates e leve para os agentes especializados. 
+            Eles vão otimizar, personalizar e turbinar suas automações.
+          </p>
+        </div>
+        
+        <div className="agents-grid">
+          {gptAgents.map((agent) => (
+            <AgentCard key={agent.id} agent={agent} />
+          ))}
+        </div>
+        
+        <div className="agents-footer">
+          <p className="agents-note">
+            💡 <strong>Como usar:</strong> Baixe qualquer template, copie o conteúdo e cole no agente GPT. 
+            Ele vai analisar e sugerir melhorias específicas para seu caso.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+};
   return (
     <header className="header">
       <div className="container">
