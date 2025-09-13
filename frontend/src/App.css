@@ -590,14 +590,16 @@ body {
   color: var(--text-primary);
 }
 
-/* Hero Section */
+/* Hero Section - Centered */
 .hero {
   position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
+  justify-content: center;
   overflow: hidden;
   padding-top: 80px;
+  text-align: center;
 }
 
 .hero-background {
@@ -622,43 +624,46 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(10, 10, 11, 0.9) 0%, rgba(255, 107, 53, 0.1) 100%);
+  background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(255, 107, 53, 0.1) 100%);
   z-index: -1;
 }
 
-.hero-content {
+.hero-content-centered {
   position: relative;
   z-index: 1;
   margin-bottom: 60px;
+  max-width: 900px;
 }
 
-.hero-title {
+.hero-title-centered {
   font-size: clamp(48px, 6vw, 84px);
   font-weight: 800;
   line-height: 1.1;
   margin-bottom: 24px;
   letter-spacing: -0.02em;
+  color: var(--text-primary);
 }
 
 .highlight {
-  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  background: var(--accent-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.hero-description {
+.hero-description-centered {
   font-size: 22px;
-  color: rgba(255, 255, 255, 0.8);
-  max-width: 600px;
-  margin-bottom: 48px;
+  color: var(--text-secondary);
+  max-width: 700px;
+  margin: 0 auto 48px;
   font-weight: 400;
   line-height: 1.6;
 }
 
-.hero-stats {
+.hero-stats-centered {
   display: flex;
   gap: 48px;
+  justify-content: center;
   margin-bottom: 48px;
 }
 
@@ -669,13 +674,13 @@ body {
 .stat-number {
   font-size: 36px;
   font-weight: 800;
-  color: #ff6b35;
+  color: var(--accent-primary);
   margin-bottom: 8px;
 }
 
 .stat-label {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-tertiary);
   font-weight: 500;
 }
 
@@ -689,6 +694,7 @@ body {
   font-weight: 700;
   margin-bottom: 32px;
   text-align: center;
+  color: var(--text-primary);
 }
 
 .featured-grid {
@@ -700,8 +706,8 @@ body {
 }
 
 .featured-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
@@ -738,11 +744,11 @@ body {
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 8px;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .featured-info p {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-secondary);
   font-size: 14px;
   margin-bottom: 16px;
 }
@@ -752,7 +758,7 @@ body {
   justify-content: space-between;
   align-items: center;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-tertiary);
 }
 
 .downloads, .rating {
