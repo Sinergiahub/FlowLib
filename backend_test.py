@@ -399,8 +399,8 @@ class FlowLibAPITester:
             return False
 
 def main():
-    print("🚀 Starting FlowLib API Tests")
-    print("=" * 50)
+    print("🚀 Starting FlowLib API Tests - Including CSV Import Features")
+    print("=" * 60)
     
     tester = FlowLibAPITester()
     
@@ -415,7 +415,13 @@ def main():
         tester.test_search_functionality,
         tester.test_filter_functionality,
         tester.test_download_tracking,
-        tester.test_invalid_template_id
+        tester.test_invalid_template_id,
+        tester.test_template_by_slug,
+        tester.test_csv_import_basic,
+        tester.test_csv_import_update_delete,
+        tester.test_csv_import_validation_errors,
+        tester.test_csv_import_invalid_file,
+        tester.verify_imported_data
     ]
     
     for test in tests:
@@ -423,10 +429,16 @@ def main():
             test()
         except Exception as e:
             print(f"❌ Test failed with exception: {str(e)}")
+            tester.errors.append(f"{test.__name__}: {str(e)}")
     
     # Print final results
-    print("\n" + "=" * 50)
+    print("\n" + "=" * 60)
     print(f"📊 Final Results: {tester.tests_passed}/{tester.tests_run} tests passed")
+    
+    if tester.errors:
+        print(f"\n🚨 Failed Tests:")
+        for error in tester.errors:
+            print(f"   • {error}")
     
     if tester.tests_passed == tester.tests_run:
         print("🎉 All tests passed! Backend API is working correctly.")
