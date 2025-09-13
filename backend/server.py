@@ -763,30 +763,44 @@ async def preview_import(
         raise HTTPException(status_code=500, detail=f"Erro interno do servidor: {str(e)}")
 
 # Existing endpoints with updated schema
-@api_router.get("/templates", response_model=List[Template])
+@api_router.get("/templates", response_model=PaginatedTemplateResponse)
 async def get_templates(
+    search: Optional[str] = Query(None, description="Search in title, description, tags"),
+    platform: Optional[str] = Query(None, description="Filter by platform"),
+    category: Optional[str] = Query(None, description="Filter by category"),
+    tool: Optional[str] = Query(None, description="Filter by tool"),
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(12, ge=1, le=50, description="Items per page")
+):
+    """Get templates with advanced filtering and pagination"""
+    return await get_templates_with_filters(
+        search=search,
+        platform=platform,
+        category=category,
+        tool=tool,
+        page=page,
+        page_size=page_size
+    )
+
+# Legacy endpoint for backward compatibility
+@api_router.get("/templates/legacy", response_model=List[Template])
+async def get_templates_legacy(
     platform: Optional[str] = Query(None),
     category: Optional[str] = Query(None),
     tool: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     limit: int = Query(50, le=100)
 ):
-    filter_query = {"status": "published"}
-    
-    if platform:
-        filter_query["platform"] = platform
-    if category:
-        filter_query["categories"] = {"$in": [category]}
-    if tool:
-        filter_query["tools"] = {"$in": [tool]}
-    if search:
-        filter_query["$or"] = [
-            {"title": {"$regex": search, "$options": "i"}},
-            {"description": {"$regex": search, "$options": "i"}}
-        ]
-    
-    templates = await db.templates.find(filter_query).sort("downloads_count", -1).limit(limit).to_list(limit)
-    return [Template(**template) for template in templates]
+    """Legacy templates endpoint for backward compatibility"""
+    result = await get_templates_with_filters(
+        search=search,
+        platform=platform,
+        category=category,
+        tool=tool,
+        page=1,
+        page_size=limit
+    )
+    return result.items
 
 @api_router.get("/templates/{template_id}", response_model=Template)
 async def get_template(template_id: str):
