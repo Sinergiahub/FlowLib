@@ -108,130 +108,93 @@ class ImportReport(BaseModel):
     deleted: int = 0
     errors: List[str] = []
 
-# Initialize sample data
+# Initialize collections and sample data
 @app.on_event("startup")
 async def startup_db():
     # Categories
     categories = [
-        {"id": "produtividade", "name": "Produtividade", "slug": "produtividade", "description": "Automações para otimizar tarefas"},
-        {"id": "marketing", "name": "Marketing", "slug": "marketing", "description": "Automações para marketing digital"},
-        {"id": "vendas", "name": "Vendas", "slug": "vendas", "description": "Automações para processos de venda"},
-        {"id": "redes-sociais", "name": "Redes Sociais", "slug": "redes-sociais", "description": "Automações para social media"},
-        {"id": "atendimento", "name": "Atendimento", "slug": "atendimento", "description": "Automações para suporte ao cliente"},
-        {"id": "leads", "name": "Geração de Leads", "slug": "leads", "description": "Automações para captura de leads"},
-        {"id": "pesquisa", "name": "Pesquisa", "slug": "pesquisa", "description": "Automações para coleta de dados"}
+        {"key": "produtividade", "name": "Produtividade"},
+        {"key": "marketing", "name": "Marketing"},
+        {"key": "vendas", "name": "Vendas"},
+        {"key": "redes-sociais", "name": "Redes Sociais"},
+        {"key": "atendimento", "name": "Atendimento"},
+        {"key": "leads", "name": "Geração de Leads"},
+        {"key": "pesquisa", "name": "Pesquisa"},
+        {"key": "ecommerce", "name": "E-commerce"},
+        {"key": "financas", "name": "Finanças"}
     ]
     
     # Tools
     tools = [
-        {"id": "openai", "name": "OpenAI", "slug": "openai"},
-        {"id": "slack", "name": "Slack", "slug": "slack"},
-        {"id": "google-sheets", "name": "Google Sheets", "slug": "google-sheets"},
-        {"id": "webflow", "name": "Webflow", "slug": "webflow"},
-        {"id": "voiceflow", "name": "Voiceflow", "slug": "voiceflow"},
-        {"id": "adzuna", "name": "Adzuna API", "slug": "adzuna"},
-        {"id": "make", "name": "Make", "slug": "make"},
-        {"id": "zapier", "name": "Zapier", "slug": "zapier"},
-        {"id": "n8n", "name": "n8n", "slug": "n8n"}
+        {"key": "openai", "name": "OpenAI"},
+        {"key": "slack", "name": "Slack"},
+        {"key": "google-sheets", "name": "Google Sheets"},
+        {"key": "webflow", "name": "Webflow"},
+        {"key": "voiceflow", "name": "Voiceflow"},
+        {"key": "adzuna", "name": "Adzuna API"},
+        {"key": "make", "name": "Make"},
+        {"key": "zapier", "name": "Zapier"},
+        {"key": "n8n", "name": "n8n"},
+        {"key": "telegram", "name": "Telegram"},
+        {"key": "discord", "name": "Discord"},
+        {"key": "notion", "name": "Notion"},
+        {"key": "airtable", "name": "Airtable"},
+        {"key": "stripe", "name": "Stripe"},
+        {"key": "gmail", "name": "Gmail"}
     ]
     
-    # Templates
+    # Templates (existing ones converted to new schema)
     templates = [
         {
             "id": str(uuid.uuid4()),
-            "title": "Assistente Virtual para TikTok",
             "slug": "assistente-virtual-tiktok",
+            "title": "Assistente Virtual para TikTok",
             "description": "Sistema completo de IA que gera clips virais do TikTok automaticamente, criando conteúdo envolvente a partir de temas populares.",
             "platform": "n8n",
             "author_name": "AutoFlow Pro",
-            "preview_url": "https://images.unsplash.com/photo-1531403009284-440f080d1e12",
+            "preview_image_url": "https://images.unsplash.com/photo-1531403009284-440f080d1e12",
             "tutorial_url": "https://youtube.com/watch?v=demo1",
             "downloads_count": 2847,
             "rating_avg": 4.8,
             "categories": ["redes-sociais", "marketing"],
             "tools": ["openai", "n8n"],
             "status": "published",
-            "created_at": datetime.now(timezone.utc)
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
         },
         {
             "id": str(uuid.uuid4()),
-            "title": "$6k Por Mês com IA",
             "slug": "6k-por-mes-ia",
+            "title": "$6k Por Mês com IA",
             "description": "Template de automação para geração de renda usando IA. Criação de modelos de negócio escaláveis com inteligência artificial.",
             "platform": "Make",
             "author_name": "AI Revenue",
-            "preview_url": "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
+            "preview_image_url": "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
             "tutorial_url": "https://youtube.com/watch?v=demo2",
             "downloads_count": 1923,
             "rating_avg": 4.7,
             "categories": ["produtividade", "vendas"],
             "tools": ["openai", "make"],
             "status": "published",
-            "created_at": datetime.now(timezone.utc)
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
         },
         {
             "id": str(uuid.uuid4()),
-            "title": "100% Automação SEO",
             "slug": "100-automacao-seo",
+            "title": "100% Automação SEO",
             "description": "Sistema de automação completo para SEO. Análise de palavras-chave, criação de conteúdo e otimização automática de sites.",
             "platform": "Zapier",
             "author_name": "SEO Master",
-            "preview_url": "https://images.unsplash.com/photo-1518770660439-4636190af475",
+            "preview_image_url": "https://images.unsplash.com/photo-1518770660439-4636190af475",
             "tutorial_url": "https://youtube.com/watch?v=demo3",
             "downloads_count": 3156,
             "rating_avg": 4.9,
             "categories": ["marketing", "produtividade"],
             "tools": ["openai", "google-sheets", "zapier"],
             "status": "published",
-            "created_at": datetime.now(timezone.utc)
-        },
-        {
-            "id": str(uuid.uuid4()),
-            "title": "Análise de Vídeos com IA",
-            "slug": "analise-videos-ia",
-            "description": "Ferramenta avançada de análise de vídeos usando IA. Extração de insights, legendas automáticas e métricas de engajamento.",
-            "platform": "n8n",
-            "author_name": "Video AI Lab",
-            "preview_url": "https://images.unsplash.com/photo-1531297484001-80022131f5a1",
-            "tutorial_url": "https://youtube.com/watch?v=demo4",
-            "downloads_count": 1567,
-            "rating_avg": 4.6,
-            "categories": ["redes-sociais", "pesquisa"],
-            "tools": ["openai", "n8n"],
-            "status": "published",
-            "created_at": datetime.now(timezone.utc)
-        },
-        {
-            "id": str(uuid.uuid4()),
-            "title": "Chatbot para Agência de Viagens",
-            "slug": "chatbot-agencia-viagens",
-            "description": "Chatbot inteligente para agências de viagens. Coleta leads, responde dúvidas sobre destinos e facilita o processo de reserva.",
-            "platform": "Voiceflow",
-            "author_name": "Travel Bot",
-            "preview_url": "https://images.unsplash.com/photo-1743385779347-1549dabf1320",
-            "tutorial_url": "https://youtube.com/watch?v=demo5",
-            "downloads_count": 892,
-            "rating_avg": 4.5,
-            "categories": ["atendimento", "leads"],
-            "tools": ["voiceflow", "google-sheets"],
-            "status": "published",
-            "created_at": datetime.now(timezone.utc)
-        },
-        {
-            "id": str(uuid.uuid4()),
-            "title": "Follow-up Inteligente de Leads",
-            "slug": "followup-inteligente-leads",
-            "description": "Sistema automatizado de follow-up de leads com IA. Personalização de mensagens e acompanhamento de conversões.",
-            "platform": "Make",
-            "author_name": "Lead Master",
-            "preview_url": "https://images.unsplash.com/photo-1542744094-24638eff58bb",
-            "tutorial_url": "https://youtube.com/watch?v=demo6",
-            "downloads_count": 2134,
-            "rating_avg": 4.8,
-            "categories": ["marketing", "leads", "vendas"],
-            "tools": ["openai", "slack", "webflow"],
-            "status": "published",
-            "created_at": datetime.now(timezone.utc)
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
         }
     ]
     
@@ -244,6 +207,137 @@ async def startup_db():
     
     if await db.templates.count_documents({}) == 0:
         await db.templates.insert_many(templates)
+
+# CSV Import utilities
+def parse_pipe_separated(value: str) -> List[str]:
+    """Parse pipe-separated values and return list"""
+    if not value or pd.isna(value):
+        return []
+    return [v.strip() for v in str(value).split('|') if v.strip()]
+
+def validate_template_data(row: Dict[str, Any]) -> List[str]:
+    """Validate template data and return list of errors"""
+    errors = []
+    
+    # Required fields
+    if not row.get('slug'):
+        errors.append("Slug é obrigatório")
+    elif not re.match(r'^[a-z0-9-]+$', str(row['slug'])):
+        errors.append(f"Slug inválido: {row['slug']} (deve conter apenas letras minúsculas, números e hífens)")
+    
+    if not row.get('platform'):
+        errors.append("Platform é obrigatório")
+    
+    # URL validation
+    url_fields = ['tutorial_url', 'preview_image_url', 'download_url', 'json_url']
+    for field in url_fields:
+        url = row.get(field)
+        if url and not pd.isna(url) and url.strip():
+            url_str = str(url).strip()
+            if not (url_str.startswith('http://') or url_str.startswith('https://')):
+                errors.append(f"{field} deve começar com http:// ou https://: {url_str}")
+    
+    # Rating validation
+    if 'rating_avg' in row and row['rating_avg'] is not None and not pd.isna(row['rating_avg']):
+        try:
+            rating = float(row['rating_avg'])
+            if rating < 0 or rating > 5:
+                errors.append(f"rating_avg deve estar entre 0 e 5: {rating}")
+        except (ValueError, TypeError):
+            errors.append(f"rating_avg deve ser um número: {row['rating_avg']}")
+    
+    # Downloads validation
+    if 'downloads_count' in row and row['downloads_count'] is not None and not pd.isna(row['downloads_count']):
+        try:
+            downloads = int(row['downloads_count'])
+            if downloads < 0:
+                errors.append(f"downloads_count deve ser >= 0: {downloads}")
+        except (ValueError, TypeError):
+            errors.append(f"downloads_count deve ser um número: {row['downloads_count']}")
+    
+    return errors
+
+async def process_template_row(row: Dict[str, Any], action: str) -> Dict[str, Any]:
+    """Process a single template row"""
+    result = {"success": False, "action": action, "errors": []}
+    
+    try:
+        slug = row.get('slug', '').strip()
+        if not slug:
+            result["errors"].append("Slug é obrigatório")
+            return result
+        
+        if action == "delete":
+            # Delete template by slug
+            delete_result = await db.templates.delete_one({"slug": slug})
+            if delete_result.deleted_count > 0:
+                result["success"] = True
+                result["action"] = "deleted"
+            else:
+                result["errors"].append(f"Template com slug '{slug}' não encontrado para exclusão")
+            return result
+        
+        # Validate data for upsert
+        validation_errors = validate_template_data(row)
+        if validation_errors:
+            result["errors"] = validation_errors
+            return result
+        
+        # Prepare template data
+        template_data = {
+            "slug": slug,
+            "title": row.get('title', '').strip(),
+            "description": row.get('description', '').strip() if row.get('description') and not pd.isna(row.get('description')) else None,
+            "platform": row.get('platform', '').strip(),
+            "author_name": row.get('author_name', '').strip() if row.get('author_name') and not pd.isna(row.get('author_name')) else None,
+            "author_email": row.get('author_email', '').strip() if row.get('author_email') and not pd.isna(row.get('author_email')) else None,
+            "tutorial_url": row.get('tutorial_url', '').strip() if row.get('tutorial_url') and not pd.isna(row.get('tutorial_url')) else None,
+            "preview_image_url": row.get('preview_image_url', '').strip() if row.get('preview_image_url') and not pd.isna(row.get('preview_image_url')) else None,
+            "download_url": row.get('download_url', '').strip() if row.get('download_url') and not pd.isna(row.get('download_url')) else None,
+            "json_url": row.get('json_url', '').strip() if row.get('json_url') and not pd.isna(row.get('json_url')) else None,
+            "language": row.get('language', 'pt-BR').strip(),
+            "status": row.get('status', 'draft').strip(),
+            "tags": row.get('tags', '').strip() if row.get('tags') and not pd.isna(row.get('tags')) else None,
+            "notes": row.get('notes', '').strip() if row.get('notes') and not pd.isna(row.get('notes')) else None,
+            "external_id": row.get('external_id', '').strip() if row.get('external_id') and not pd.isna(row.get('external_id')) else None,
+            "categories": parse_pipe_separated(row.get('categories', '')),
+            "tools": parse_pipe_separated(row.get('tools', '')),
+            "updated_at": datetime.now(timezone.utc)
+        }
+        
+        # Handle numeric fields
+        if 'rating_avg' in row and row['rating_avg'] is not None and not pd.isna(row['rating_avg']):
+            template_data["rating_avg"] = float(row['rating_avg'])
+        
+        if 'downloads_count' in row and row['downloads_count'] is not None and not pd.isna(row['downloads_count']):
+            template_data["downloads_count"] = int(row['downloads_count'])
+        
+        # Check if template exists
+        existing = await db.templates.find_one({"slug": slug})
+        
+        if existing:
+            # Update existing template
+            await db.templates.update_one(
+                {"slug": slug},
+                {"$set": template_data}
+            )
+            result["success"] = True
+            result["action"] = "updated"
+        else:
+            # Insert new template
+            template_data["id"] = str(uuid.uuid4())
+            template_data["created_at"] = datetime.now(timezone.utc)
+            template_data.setdefault("downloads_count", 0)
+            
+            await db.templates.insert_one(template_data)
+            result["success"] = True
+            result["action"] = "inserted"
+        
+        return result
+        
+    except Exception as e:
+        result["errors"].append(f"Erro ao processar linha: {str(e)}")
+        return result
 
 # Routes
 @api_router.get("/")
