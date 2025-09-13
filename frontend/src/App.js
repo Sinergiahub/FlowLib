@@ -9,6 +9,45 @@ import AdminImport from './pages/AdminImport';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Mock data for GPT Agents
+const gptAgents = [
+  {
+    id: 'agent-1',
+    title: 'AI Workflow Optimizer',
+    description: 'Analisa seus templates de automação e sugere melhorias de performance e eficiência',
+    banner_url: 'https://images.unsplash.com/photo-1677442136019-21780ecad995',
+    gpt_url: 'https://chat.openai.com/g/g-workflow-optimizer'
+  },
+  {
+    id: 'agent-2', 
+    title: 'N8N Flow Builder',
+    description: 'Converte suas ideias em fluxos estruturados de n8n com nós e conexões otimizadas',
+    banner_url: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31',
+    gpt_url: 'https://chat.openai.com/g/g-n8n-builder'
+  },
+  {
+    id: 'agent-3',
+    title: 'Automation Code Generator', 
+    description: 'Gera códigos JavaScript, Python e webhooks personalizados para suas automações',
+    banner_url: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4',
+    gpt_url: 'https://chat.openai.com/g/g-code-generator'
+  },
+  {
+    id: 'agent-4',
+    title: 'Business Process Mapper',
+    description: 'Mapeia processos de negócio e sugere pontos ideais para implementar automações',
+    banner_url: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43',
+    gpt_url: 'https://chat.openai.com/g/g-process-mapper'
+  },
+  {
+    id: 'agent-5',
+    title: 'API Integration Helper',
+    description: 'Ajuda a conectar diferentes APIs e serviços em seus fluxos de automação',
+    banner_url: 'https://images.unsplash.com/photo-1558494944-a2e5cf62a8b1',
+    gpt_url: 'https://chat.openai.com/g/g-api-helper'
+  }
+];
+
 // Header Component
 const Header = ({ onSearch, searchTerm }) => {
   return (
