@@ -631,6 +631,7 @@ const Home = () => {
     <div className="app">
       <Header onSearch={setSearchTerm} searchTerm={searchTerm} />
       <HeroSection featuredTemplates={featuredTemplates} />
+      <AgentsSection />
       
       <main className="main-content">
         <div className="container">
