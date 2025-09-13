@@ -491,7 +491,7 @@ const Home = () => {
               categories={categories}
               tools={tools}
               filters={filters}
-              onFilterChange={setFilters}
+              onFilterChange={handleFilterChange}
             />
             
             <div className="templates-section">
