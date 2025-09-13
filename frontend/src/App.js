@@ -497,7 +497,14 @@ const Home = () => {
             <div className="templates-section">
               <div className="section-header">
                 <h2>Biblioteca de Automações</h2>
-                <p>{templates.length} templates encontrados</p>
+                <div className="section-info">
+                  <p>{totalItems} templates encontrados</p>
+                  {usingFallback && (
+                    <span className="fallback-indicator">
+                      📚 Dados de demonstração (banco vazio)
+                    </span>
+                  )}
+                </div>
               </div>
               
               <div className="templates-grid">
