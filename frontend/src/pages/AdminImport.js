@@ -134,7 +134,7 @@ const AdminImport = () => {
       case 'insert':
         return <CheckCircle className="text-green-500" size={16} />;
       case 'update':
-        return <Download2 className="text-blue-500" size={16} />;
+        return <Download className="text-blue-500" size={16} />;
       case 'delete':
         return <Trash2 className="text-red-500" size={16} />;
       case 'error':
