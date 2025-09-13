@@ -251,12 +251,22 @@ const TemplateCard = ({ template, onClick }) => {
 const TemplateDetailModal = ({ template, isOpen, onClose }) => {
   if (!isOpen || !template) return null;
 
+  const getPlatformIcon = (platform) => {
+    switch (platform) {
+      case 'n8n': return <Bot size={16} />;
+      case 'Make': return <Layers size={16} />;
+      case 'Zapier': return <Zap size={16} />;
+      case 'Voiceflow': return <Users size={16} />;
+      default: return <Bot size={16} />;
+    }
+  };
+
   const handleDownload = async () => {
     try {
       await axios.post(`${API}/templates/${template.id}/download`);
       // In a real app, this would trigger file download
-      if (template.download_url) {
-        window.open(template.download_url, '_blank');
+      if (template.download_url || template.file_url) {
+        window.open(template.download_url || template.file_url, '_blank');
       } else {
         alert('Download iniciado! (Demo)');
       }
