@@ -13,9 +13,21 @@ class FlowLibAPITester:
         self.template_ids = []
         self.errors = []
 
+    def log_test(self, name, success, details=""):
+        """Log test result"""
+        self.tests_run += 1
+        if success:
+            self.tests_passed += 1
+            print(f"✅ {name}")
+        else:
+            print(f"❌ {name}")
+            if details:
+                print(f"   Details: {details}")
+                self.errors.append(f"{name}: {details}")
+
     def run_test(self, name, method, endpoint, expected_status, data=None, params=None):
         """Run a single API test"""
-        url = f"{self.base_url}/{endpoint}" if endpoint else self.base_url
+        url = f"{self.api_url}/{endpoint}" if endpoint else self.api_url
         headers = {'Content-Type': 'application/json'}
 
         self.tests_run += 1
@@ -45,10 +57,12 @@ class FlowLibAPITester:
             else:
                 print(f"❌ Failed - Expected {expected_status}, got {response.status_code}")
                 print(f"   Response: {response.text[:200]}...")
+                self.errors.append(f"{name}: Status {response.status_code}, Expected {expected_status}")
                 return False, {}
 
         except Exception as e:
             print(f"❌ Failed - Error: {str(e)}")
+            self.errors.append(f"{name}: {str(e)}")
             return False, {}
 
     def test_root_endpoint(self):
