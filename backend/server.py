@@ -342,8 +342,76 @@ async def process_template_row(row: Dict[str, Any], action: str) -> Dict[str, An
 # Routes
 @api_router.get("/")
 async def root():
-    return {"message": "FlowLib API - Biblioteca de Automações"}
+    return {"message": "AutomaçãoHub API - Biblioteca de Automações"}
 
+# CSV Import endpoint
+@api_router.post("/import/templates", response_model=ImportReport)
+async def import_templates(file: UploadFile = File(...)):
+    """Import templates from CSV file"""
+    
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(status_code=400, detail="Arquivo deve ser um CSV")
+    
+    report = ImportReport()
+    
+    try:
+        # Read CSV content
+        content = await file.read()
+        csv_content = content.decode('utf-8')
+        
+        # Parse CSV
+        df = pd.read_csv(StringIO(csv_content))
+        
+        # Validate required columns
+        required_columns = ['action', 'slug']
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        if missing_columns:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Colunas obrigatórias ausentes: {', '.join(missing_columns)}"
+            )
+        
+        # Process each row
+        for index, row in df.iterrows():
+            try:
+                action = str(row.get('action', '')).strip().lower()
+                
+                if action not in ['upsert', 'delete']:
+                    report.errors.append(f"Linha {index + 2}: Ação inválida '{action}' (deve ser 'upsert' ou 'delete')")
+                    continue
+                
+                # Process the row
+                result = await process_template_row(row.to_dict(), action)
+                
+                if result["success"]:
+                    if result["action"] == "inserted":
+                        report.inserted += 1
+                    elif result["action"] == "updated":
+                        report.updated += 1
+                    elif result["action"] == "deleted":
+                        report.deleted += 1
+                else:
+                    for error in result["errors"]:
+                        report.errors.append(f"Linha {index + 2}: {error}")
+                        
+            except Exception as e:
+                report.errors.append(f"Linha {index + 2}: Erro inesperado - {str(e)}")
+        
+        logger.info(f"Import completed: {report.inserted} inserted, {report.updated} updated, {report.deleted} deleted, {len(report.errors)} errors")
+        
+        return report
+        
+    except pd.errors.EmptyDataError:
+        raise HTTPException(status_code=400, detail="Arquivo CSV está vazio")
+    except pd.errors.ParserError as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao fazer parse do CSV: {str(e)}")
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=400, detail="Erro de codificação. Arquivo deve estar em UTF-8")
+    except Exception as e:
+        logger.error(f"Erro inesperado no import: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro interno do servidor: {str(e)}")
+
+# Existing endpoints with updated schema
 @api_router.get("/templates", response_model=List[Template])
 async def get_templates(
     platform: Optional[str] = Query(None),
@@ -372,6 +440,13 @@ async def get_templates(
 @api_router.get("/templates/{template_id}", response_model=Template)
 async def get_template(template_id: str):
     template = await db.templates.find_one({"id": template_id})
+    if not template:
+        raise HTTPException(status_code=404, detail="Template não encontrado")
+    return Template(**template)
+
+@api_router.get("/templates/slug/{slug}", response_model=Template)
+async def get_template_by_slug(slug: str):
+    template = await db.templates.find_one({"slug": slug})
     if not template:
         raise HTTPException(status_code=404, detail="Template não encontrado")
     return Template(**template)
