@@ -126,6 +126,19 @@ class PreviewReport(BaseModel):
     error_count: int = 0
     rows: List[PreviewRow] = []
 
+class PaginatedTemplateResponse(BaseModel):
+    items: List[Template]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+    facets: Dict[str, List[str]]
+
+class TemplateFacets(BaseModel):
+    platforms: List[str]
+    categories: List[str] 
+    tools: List[str]
+
 # Initialize collections and sample data
 @app.on_event("startup")
 async def startup_db():
