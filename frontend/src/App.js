@@ -405,13 +405,20 @@ const Home = () => {
       const response = await axios.get(`${API}/templates?${params.toString()}`);
       const data = response.data;
 
+      // Use real database data
+      setTemplates(data.items || []);
+      setTotalItems(data.total || 0);
+      setTotalPages(data.total_pages || 1);
+      setUsingFallback(false);
+
+      // Only use fallback if we have no templates at all and it's the initial load
       if (data.total === 0 && currentPage === 1 && !searchTerm && filters.platforms.length === 0 && filters.categories.length === 0 && filters.tools.length === 0) {
         // Check if database is completely empty by trying to get any template
         try {
           const checkResponse = await axios.get(`${API}/templates/legacy?limit=1`);
           if (checkResponse.data.length === 0) {
             // Database is empty, use fallback
-            const { fallbackTemplates, fallbackFacets } = await import('./lib/fallbackData.js');
+            const { fallbackTemplates } = await import('./lib/fallbackData.js');
             setTemplates(fallbackTemplates);
             setTotalItems(fallbackTemplates.length);
             setTotalPages(1);
@@ -421,18 +428,6 @@ const Home = () => {
         } catch (error) {
           console.error('Error checking database:', error);
         }
-      }
-
-      // Use real database data
-      setTemplates(data.items || []);
-      setTotalItems(data.total || 0);
-      setTotalPages(data.total_pages || 1);
-      setUsingFallback(false);
-
-      // Update facets if available
-      if (data.facets && !usingFallback) {
-        // Convert facets back to category/tool objects if needed
-        // This maintains compatibility with existing filter components
       }
 
     } catch (error) {
