@@ -388,30 +388,28 @@ const HeroSection = ({ featuredTemplates }) => {
       </div>
       
       <div className="container">
-        <div className="hero-content">
-          <div className="hero-text">
-            <h1 className="hero-title">
-              Descubra <span className="highlight">Automações</span><br />
-              que Transformam seu Negócio
-            </h1>
-            <p className="hero-description">
-              Biblioteca completa de templates para n8n, Make, Zapier e mais.
-              Automatize processos, aumente produtividade e escale seus resultados.
-            </p>
-            
-            <div className="hero-stats">
-              <div className="stat">
-                <div className="stat-number">500+</div>
-                <div className="stat-label">Templates</div>
-              </div>
-              <div className="stat">
-                <div className="stat-number">50k+</div>
-                <div className="stat-label">Downloads</div>
-              </div>
-              <div className="stat">
-                <div className="stat-number">15k+</div>
-                <div className="stat-label">Usuários</div>
-              </div>
+        <div className="hero-content-centered">
+          <h1 className="hero-title-centered">
+            Descubra <span className="highlight">Automações</span><br />
+            que Transformam seu Negócio
+          </h1>
+          <p className="hero-description-centered">
+            Biblioteca completa de templates para n8n, Make, Zapier e mais.
+            Automatize processos, aumente produtividade e escale seus resultados.
+          </p>
+          
+          <div className="hero-stats-centered">
+            <div className="stat">
+              <div className="stat-number">500+</div>
+              <div className="stat-label">Templates</div>
+            </div>
+            <div className="stat">
+              <div className="stat-number">50k+</div>
+              <div className="stat-label">Downloads</div>
+            </div>
+            <div className="stat">
+              <div className="stat-number">15k+</div>
+              <div className="stat-label">Usuários</div>
             </div>
           </div>
         </div>
@@ -423,7 +421,7 @@ const HeroSection = ({ featuredTemplates }) => {
               {featuredTemplates.slice(0, 3).map((template) => (
                 <div key={template.id} className="featured-card">
                   <div className="featured-image">
-                    <img src={template.preview_url} alt={template.title} />
+                    <img src={template.preview_image_url || template.preview_url} alt={template.title} />
                   </div>
                   <div className="featured-info">
                     <h4>{template.title}</h4>
