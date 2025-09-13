@@ -349,12 +349,10 @@ const TemplateDetailModal = ({ template, isOpen, onClose }) => {
             </div>
             
             <div className="modal-actions-enhanced">
-              {(template.download_url || template.file_url) && (
-                <button className="btn-download" onClick={handleDownload}>
-                  <Download size={18} />
-                  Baixar Template
-                </button>
-              )}
+              <button className="btn-download" onClick={handleDownload}>
+                <Download size={18} />
+                Baixar Template
+              </button>
               {template.tutorial_url && (
                 <button className="btn-tutorial" onClick={() => window.open(template.tutorial_url, '_blank')}>
                   <ExternalLink size={18} />
