@@ -209,6 +209,17 @@ async def startup_db():
         await db.templates.insert_many(templates)
 
 # CSV Import utilities
+def safe_str_strip(value) -> str:
+    """Safely convert value to string and strip, handling NaN and None"""
+    if value is None or pd.isna(value):
+        return ''
+    return str(value).strip()
+
+def safe_str_strip_or_none(value) -> Optional[str]:
+    """Safely convert value to string and strip, return None if empty"""
+    result = safe_str_strip(value)
+    return result if result else None
+
 def parse_pipe_separated(value: str) -> List[str]:
     """Parse pipe-separated values and return list"""
     if not value or pd.isna(value):
