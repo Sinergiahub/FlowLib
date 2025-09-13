@@ -977,25 +977,29 @@ const Home = () => {
 
 function App() {
   return (
-    <BrowserRouter>
-      <div className="App">
-        <Toaster 
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#1a1a1b',
-              color: '#ffffff',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-            },
-          }}
-        />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/admin/import" element={<AdminImport />} />
-        </Routes>
-      </div>
-    </BrowserRouter>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <div className="App">
+            <Toaster 
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--border-primary)',
+                },
+              }}
+            />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/admin/import" element={<AdminImport />} />
+            </Routes>
+          </div>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
