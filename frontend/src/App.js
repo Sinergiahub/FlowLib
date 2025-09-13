@@ -486,6 +486,40 @@ const TemplateDetailModal = ({ template, isOpen, onClose }) => {
   );
 };
 
+// Footer Component
+const Footer = () => {
+  return (
+    <footer className="footer">
+      <div className="container">
+        <div className="footer-content">
+          <div className="footer-brand">
+            <div className="footer-logo">
+              <Zap className="footer-logo-icon" />
+              <span className="footer-logo-text">FlowLib</span>
+            </div>
+            <p className="footer-tagline">
+              Biblioteca completa de templates de automação para transformar seu negócio.
+            </p>
+          </div>
+          
+          <div className="footer-links">
+            <a href="/quem-somos" className="footer-link">Quem somos</a>
+            <a href="/contato" className="footer-link">Contato</a>
+            <a href="/privacidade" className="footer-link">Política de Privacidade</a>
+            <a href="/termos" className="footer-link">Termos de Uso</a>
+          </div>
+        </div>
+        
+        <div className="footer-bottom">
+          <p className="footer-copyright">
+            © 2025 FlowLib. Todos os direitos reservados.
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
 // Main App Component
 const Home = () => {
   const [templates, setTemplates] = useState([]);
