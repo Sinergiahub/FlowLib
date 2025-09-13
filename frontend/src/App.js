@@ -48,7 +48,7 @@ const gptAgents = [
   }
 ];
 
-// Agent Card Component
+// Agent Card Component  
 const AgentCard = ({ agent }) => {
   const handleAgentClick = (agentId, gptUrl) => {
     // Optional: Track click event
@@ -127,6 +127,9 @@ const AgentsSection = () => {
     </section>
   );
 };
+
+// Header Component
+const Header = ({ onSearch, searchTerm }) => {
   return (
     <header className="header">
       <div className="container">
