@@ -1,0 +1,7 @@
+action,external_id,slug,title,description,platform,categories,tools,author_name,author_email,tutorial_url,preview_image_url,download_url,json_url,language,status,rating_avg,downloads_count,tags,notes
+upsert,err_001,,Sem Slug,Descrição sem slug,,marketing,openai,Author,email@test.com,https://youtube.com/test,,,,,published,4.5,100,,
+upsert,err_002,SLUG-INVALIDO,Slug Inválido,Slug com maiúsculas,n8n,marketing,openai,Author,email@test.com,https://youtube.com/test,,,,,published,4.5,100,,
+upsert,err_003,sem-plataforma,Sem Plataforma,Descrição sem plataforma,,marketing,openai,Author,email@test.com,https://youtube.com/test,,,,,published,4.5,100,,
+upsert,err_004,url-invalida,URL Inválida,Descrição com URL inválida,n8n,marketing,openai,Author,email@test.com,youtube.com/test,,,,,published,4.5,100,,
+upsert,err_005,rating-invalido,Rating Inválido,Descrição com rating inválido,n8n,marketing,openai,Author,email@test.com,https://youtube.com/test,,,,,published,6.0,100,,
+upsert,err_006,downloads-negativos,Downloads Negativos,Descrição com downloads negativos,n8n,marketing,openai,Author,email@test.com,https://youtube.com/test,,,,,published,4.5,-10,,
