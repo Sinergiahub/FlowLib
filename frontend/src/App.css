@@ -574,139 +574,255 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  padding: 20px;
-}
-
-.modal-content {
-  background: rgba(10, 10, 11, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  max-width: 800px;
+/* Enhanced Modal Styles */
+.modal-content-enhanced {
+  background: rgba(10, 10, 11, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  max-width: 1000px;
   width: 100%;
   max-height: 90vh;
-  overflow-y: auto;
+  overflow: hidden;
   position: relative;
   backdrop-filter: blur(20px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
 }
 
-.modal-close {
+.modal-layout {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  min-height: 500px;
+}
+
+.modal-preview {
+  position: relative;
+  background: rgba(255, 255, 255, 0.03);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.modal-preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  min-height: 500px;
+}
+
+.modal-platform-badge {
   position: absolute;
   top: 20px;
   right: 20px;
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
+  background: rgba(255, 107, 53, 0.95);
   color: #ffffff;
-  font-size: 24px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 25px;
+  font-size: 13px;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  z-index: 1;
+  gap: 6px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 107, 53, 0.3);
 }
 
-.modal-close:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.modal-header {
-  display: flex;
-  gap: 24px;
+.modal-details {
   padding: 32px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
 }
 
-.modal-image {
-  width: 200px;
-  height: 150px;
-  object-fit: cover;
-  border-radius: 12px;
-  flex-shrink: 0;
+.modal-header-content {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 20px;
 }
 
-.modal-info h2 {
+.modal-title {
   font-size: 28px;
   font-weight: 700;
-  margin-bottom: 16px;
   color: #ffffff;
+  margin-bottom: 12px;
+  line-height: 1.2;
 }
 
-.modal-description {
+.modal-description-enhanced {
   color: rgba(255, 255, 255, 0.8);
   font-size: 16px;
   line-height: 1.6;
-  margin-bottom: 24px;
+  margin: 0;
 }
 
-.modal-meta {
+.modal-metadata {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.metadata-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
 
-.meta-item {
+.metadata-item {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.meta-label {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.meta-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 4px;
 }
 
-.modal-sections {
-  padding: 32px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.metadata-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.modal-section {
-  margin-bottom: 24px;
-}
-
-.modal-section h4 {
-  font-size: 16px;
+.metadata-value {
+  font-size: 14px;
   font-weight: 600;
-  margin-bottom: 12px;
   color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.tags-list, .tools-list {
+.modal-chips-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chips-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chips-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.chips-container {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-.modal-actions {
-  padding: 32px;
+.category-chip {
+  background: rgba(255, 107, 53, 0.15);
+  color: #ff6b35;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid rgba(255, 107, 53, 0.2);
+}
+
+.tool-chip {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.modal-actions-enhanced {
   display: flex;
-  gap: 16px;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.btn-download {
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  color: #ffffff;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  flex: 1;
   justify-content: center;
+}
+
+.btn-download:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+}
+
+.btn-tutorial {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  flex: 1;
+  justify-content: center;
+}
+
+.btn-tutorial:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+/* Responsive Design for Enhanced Modal */
+@media (max-width: 900px) {
+  .modal-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: 300px 1fr;
+  }
+  
+  .modal-preview {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  .modal-preview-image {
+    min-height: 300px;
+  }
+  
+  .metadata-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal-actions-enhanced {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 600px) {
+  .modal-content-enhanced {
+    margin: 10px;
+    border-radius: 16px;
+  }
+  
+  .modal-details {
+    padding: 20px;
+  }
+  
+  .modal-title {
+    font-size: 24px;
+  }
 }
 
 /* Loading */
