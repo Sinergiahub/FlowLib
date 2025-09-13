@@ -273,7 +273,7 @@ async def process_template_row(row: Dict[str, Any], action: str) -> Dict[str, An
     result = {"success": False, "action": action, "errors": []}
     
     try:
-        slug = row.get('slug', '').strip()
+        slug = safe_str_strip(row.get('slug', ''))
         if not slug:
             result["errors"].append("Slug é obrigatório")
             return result
