@@ -631,7 +631,6 @@ const Home = () => {
     <div className="app">
       <Header onSearch={setSearchTerm} searchTerm={searchTerm} />
       <HeroSection featuredTemplates={featuredTemplates} />
-      <AgentsSection />
       
       <main className="main-content">
         <div className="container">
@@ -669,6 +668,9 @@ const Home = () => {
           </div>
         </div>
       </main>
+      
+      <AgentsSection />
+      <Footer />
       
       <TemplateDetailModal
         template={selectedTemplate}
