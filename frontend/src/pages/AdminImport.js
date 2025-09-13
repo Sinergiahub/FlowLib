@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, FileText, Link, Eye, Download2, AlertCircle, CheckCircle, XCircle, Trash2 } from 'lucide-react';
+import { Upload, FileText, Link, Eye, Download, AlertCircle, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
