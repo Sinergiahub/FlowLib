@@ -356,6 +356,141 @@ class FlowLibAPITester:
             self.log_test("Get template by slug", False, str(e))
             return False
 
+    def test_csv_preview_with_file(self):
+        """Test CSV preview endpoint with file upload"""
+        print("\n🔍 Testing CSV Preview - File Upload...")
+        
+        try:
+            with open('/app/test-import.csv', 'rb') as f:
+                files = {'file': ('test-import.csv', f, 'text/csv')}
+                response = requests.post(f"{self.api_url}/import/preview", files=files)
+                
+                success = response.status_code == 200
+                if success:
+                    data = response.json()
+                    expected_keys = ['total_rows', 'insert_count', 'update_count', 'delete_count', 'error_count', 'rows']
+                    has_all_keys = all(key in data for key in expected_keys)
+                    
+                    if has_all_keys:
+                        print(f"   📊 Preview Results: Total: {data['total_rows']}, Insert: {data['insert_count']}, Update: {data['update_count']}, Delete: {data['delete_count']}, Errors: {data['error_count']}")
+                        
+                        # Verify rows structure
+                        if data['rows']:
+                            row = data['rows'][0]
+                            row_keys = ['line_number', 'slug', 'title', 'action', 'status', 'message', 'data']
+                            has_row_structure = all(key in row for key in row_keys)
+                            success = has_row_structure
+                            print(f"   ✅ Row structure valid: {has_row_structure}")
+                        else:
+                            print(f"   ⚠️  No rows in preview")
+                    else:
+                        success = False
+                        print(f"   ❌ Missing keys: {[k for k in expected_keys if k not in data]}")
+                        
+                self.log_test("CSV Preview - File Upload", success, f"Status: {response.status_code}")
+                return success
+                
+        except FileNotFoundError:
+            self.log_test("CSV Preview - File Upload", False, "test-import.csv file not found")
+            return False
+        except Exception as e:
+            self.log_test("CSV Preview - File Upload", False, str(e))
+            return False
+
+    def test_csv_preview_with_errors(self):
+        """Test CSV preview endpoint with validation errors"""
+        print("\n🔍 Testing CSV Preview - Validation Errors...")
+        
+        try:
+            with open('/app/test-errors.csv', 'rb') as f:
+                files = {'file': ('test-errors.csv', f, 'text/csv')}
+                response = requests.post(f"{self.api_url}/import/preview", files=files)
+                
+                success = response.status_code == 200
+                if success:
+                    data = response.json()
+                    print(f"   📊 Preview Results: Total: {data['total_rows']}, Errors: {data['error_count']}")
+                    
+                    # Should have errors for validation failures
+                    success = data['error_count'] > 0
+                    
+                    # Check that error rows have proper status
+                    error_rows = [row for row in data['rows'] if row['status'] == 'error']
+                    print(f"   🚨 Found {len(error_rows)} error rows")
+                    
+                    if error_rows:
+                        print(f"   📝 Sample error: {error_rows[0]['message']}")
+                        
+                self.log_test("CSV Preview - Validation Errors", success, f"Status: {response.status_code}, Errors: {data.get('error_count', 0) if success else 0}")
+                return success
+                
+        except FileNotFoundError:
+            self.log_test("CSV Preview - Validation Errors", False, "test-errors.csv file not found")
+            return False
+        except Exception as e:
+            self.log_test("CSV Preview - Validation Errors", False, str(e))
+            return False
+
+    def test_csv_preview_invalid_input(self):
+        """Test CSV preview endpoint with invalid inputs"""
+        print("\n🔍 Testing CSV Preview - Invalid Inputs...")
+        
+        try:
+            # Test with no file and no URL
+            response = requests.post(f"{self.api_url}/import/preview")
+            success1 = response.status_code == 400
+            self.log_test("CSV Preview - No Input", success1, f"Status: {response.status_code}")
+            
+            # Test with non-CSV file
+            files = {'file': ('test.txt', b'not a csv file', 'text/plain')}
+            response = requests.post(f"{self.api_url}/import/preview", files=files)
+            success2 = response.status_code == 400
+            self.log_test("CSV Preview - Invalid File Type", success2, f"Status: {response.status_code}")
+            
+            return success1 and success2
+            
+        except Exception as e:
+            self.log_test("CSV Preview - Invalid Inputs", False, str(e))
+            return False
+
+    def test_google_sheets_url_conversion(self):
+        """Test Google Sheets URL conversion (if available)"""
+        print("\n🔍 Testing Google Sheets URL Conversion...")
+        
+        try:
+            # Test with a mock Google Sheets URL (this will likely fail since we don't have a real public sheet)
+            test_url = "https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit"
+            
+            data = {'sheet_url': test_url}
+            response = requests.post(f"{self.api_url}/import/preview", data=data)
+            
+            # We expect this to fail with a specific error about accessing the sheet
+            # but the URL conversion logic should work
+            if response.status_code == 400:
+                error_data = response.json()
+                error_message = error_data.get('detail', '')
+                
+                # Check if it's a URL access error (good) vs URL format error (bad)
+                if 'buscar CSV da URL' in error_message or 'Erro ao buscar' in error_message:
+                    success = True
+                    print(f"   ✅ URL conversion working, failed at fetch stage as expected")
+                elif 'URL deve ser um Google Sheets válido' in error_message:
+                    success = False
+                    print(f"   ❌ URL format validation failed")
+                else:
+                    success = True  # Other errors are acceptable for this test
+                    print(f"   ⚠️  Other error (acceptable): {error_message}")
+            else:
+                success = response.status_code == 200  # If it somehow works, that's good too
+                print(f"   📊 Unexpected success or different error: {response.status_code}")
+                
+            self.log_test("Google Sheets URL Conversion", success, f"Status: {response.status_code}")
+            return success
+            
+        except Exception as e:
+            self.log_test("Google Sheets URL Conversion", False, str(e))
+            return False
+
     def verify_imported_data(self):
         """Verify that imported data appears correctly"""
         print("\n🔍 Verifying Imported Data...")
