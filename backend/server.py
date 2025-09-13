@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 import pandas as pd
 from io import StringIO
 import asyncio
+import requests
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
