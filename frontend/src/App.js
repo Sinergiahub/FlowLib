@@ -255,78 +255,104 @@ const TemplateDetailModal = ({ template, isOpen, onClose }) => {
     try {
       await axios.post(`${API}/templates/${template.id}/download`);
       // In a real app, this would trigger file download
-      alert('Download iniciado! (Demo)');
+      if (template.download_url) {
+        window.open(template.download_url, '_blank');
+      } else {
+        alert('Download iniciado! (Demo)');
+      }
     } catch (error) {
       console.error('Erro no download:', error);
     }
   };
 
+  const previewImage = template.preview_image_url || template.preview_url || 'https://images.unsplash.com/photo-1518770660439-4636190af475';
+
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content-enhanced" onClick={(e) => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose}>×</button>
         
-        <div className="modal-header">
-          <img src={template.preview_url} alt={template.title} className="modal-image" />
-          <div className="modal-info">
-            <h2>{template.title}</h2>
-            <p className="modal-description">{template.description}</p>
-            
-            <div className="modal-meta">
-              <div className="meta-item">
-                <span className="meta-label">Plataforma:</span>
-                <span className="meta-value">{template.platform}</span>
-              </div>
-              <div className="meta-item">
-                <span className="meta-label">Autor:</span>
-                <span className="meta-value">{template.author_name}</span>
-              </div>
-              <div className="meta-item">
-                <span className="meta-label">Downloads:</span>
-                <span className="meta-value">{template.downloads_count.toLocaleString()}</span>
-              </div>
-              <div className="meta-item">
-                <span className="meta-label">Avaliação:</span>
-                <span className="meta-value">
-                  <Star size={16} />
-                  {template.rating_avg} / 5.0
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="modal-sections">
-          <div className="modal-section">
-            <h4>Categorias</h4>
-            <div className="tags-list">
-              {template.categories.map((category) => (
-                <span key={category} className="tag">{category}</span>
-              ))}
+        <div className="modal-layout">
+          {/* Left side - Preview Image */}
+          <div className="modal-preview">
+            <img src={previewImage} alt={template.title} className="modal-preview-image" />
+            <div className="modal-platform-badge">
+              {getPlatformIcon(template.platform)}
+              <span>{template.platform}</span>
             </div>
           </div>
           
-          <div className="modal-section">
-            <h4>Ferramentas Utilizadas</h4>
-            <div className="tools-list">
-              {template.tools.map((tool) => (
-                <span key={tool} className="tool-tag">{tool}</span>
-              ))}
+          {/* Right side - Details */}
+          <div className="modal-details">
+            <div className="modal-header-content">
+              <h2 className="modal-title">{template.title}</h2>
+              <p className="modal-description-enhanced">
+                {template.description || template.shortDescription || 'Descrição não disponível'}
+              </p>
+            </div>
+            
+            <div className="modal-metadata">
+              <div className="metadata-grid">
+                <div className="metadata-item">
+                  <span className="metadata-label">Autor</span>
+                  <span className="metadata-value">{template.author_name || 'Community'}</span>
+                </div>
+                <div className="metadata-item">
+                  <span className="metadata-label">Downloads</span>
+                  <span className="metadata-value">
+                    <Download size={14} />
+                    {(template.downloads_count || 0).toLocaleString()}
+                  </span>
+                </div>
+                <div className="metadata-item">
+                  <span className="metadata-label">Avaliação</span>
+                  <span className="metadata-value">
+                    <Star size={14} />
+                    {template.rating_avg || 'N/A'}
+                  </span>
+                </div>
+                <div className="metadata-item">
+                  <span className="metadata-label">Plataforma</span>
+                  <span className="metadata-value">{template.platform}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="modal-chips-section">
+              <div className="chips-group">
+                <h4 className="chips-title">Categorias</h4>
+                <div className="chips-container">
+                  {(template.categories || []).map((category) => (
+                    <span key={category} className="category-chip">{category}</span>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="chips-group">
+                <h4 className="chips-title">Ferramentas</h4>
+                <div className="chips-container">
+                  {(template.tools || []).map((tool) => (
+                    <span key={tool} className="tool-chip">{tool}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            <div className="modal-actions-enhanced">
+              {(template.download_url || template.file_url) && (
+                <button className="btn-download" onClick={handleDownload}>
+                  <Download size={18} />
+                  Baixar Template
+                </button>
+              )}
+              {template.tutorial_url && (
+                <button className="btn-tutorial" onClick={() => window.open(template.tutorial_url, '_blank')}>
+                  <ExternalLink size={18} />
+                  Ver Tutorial
+                </button>
+              )}
             </div>
           </div>
-        </div>
-        
-        <div className="modal-actions">
-          <button className="btn-primary" onClick={handleDownload}>
-            <Download size={16} />
-            Baixar Template
-          </button>
-          {template.tutorial_url && (
-            <button className="btn-secondary" onClick={() => window.open(template.tutorial_url, '_blank')}>
-              <ExternalLink size={16} />
-              Ver Tutorial
-            </button>
-          )}
         </div>
       </div>
     </div>
