@@ -132,33 +132,113 @@ const AgentsSection = () => {
 
 // Header Component
 const Header = ({ onSearch, searchTerm }) => {
+  const { theme, toggleTheme } = useTheme();
+  const { user, logout, isAuthenticated } = useAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const scrollToAgents = () => {
+    const agentsSection = document.querySelector('.agents-section');
+    if (agentsSection) {
+      agentsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
-    <header className="header">
-      <div className="container">
-        <div className="nav">
-          <div className="logo">
-            <Zap className="logo-icon" />
-            <span className="logo-text">FlowLib</span>
-          </div>
-          
-          <div className="search-container">
-            <Search className="search-icon" />
-            <input
-              type="text"
-              placeholder="Buscar automações..."
-              className="search-input"
-              value={searchTerm}
-              onChange={(e) => onSearch(e.target.value)}
-            />
-          </div>
-          
-          <div className="nav-actions">
-            <button className="btn-secondary">Entrar</button>
-            <button className="btn-primary">Cadastrar</button>
+    <>
+      <header className="header">
+        <div className="container">
+          <div className="nav">
+            <div className="logo">
+              <Zap className="logo-icon" />
+              <span className="logo-text">FlowLib</span>
+            </div>
+            
+            <div className="search-container">
+              <Search className="search-icon" />
+              <input
+                type="text"
+                placeholder="Buscar automações..."
+                className="search-input"
+                value={searchTerm}
+                onChange={(e) => onSearch(e.target.value)}
+              />
+            </div>
+            
+            <div className="nav-actions">
+              {/* Go to Agents Button */}
+              <button className="btn-agents" onClick={scrollToAgents}>
+                <Bot size={16} />
+                Ir para Agentes GPT
+              </button>
+
+              {/* Theme Toggle */}
+              <button className="theme-toggle" onClick={toggleTheme}>
+                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
+
+              {/* Auth Section */}
+              {isAuthenticated() ? (
+                <div className="user-menu">
+                  <button 
+                    className="user-button"
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                  >
+                    {user.avatarUrl && (
+                      <img src={user.avatarUrl} alt={user.name} className="user-avatar" />
+                    )}
+                    <span className="user-name">{user.name}</span>
+                    <ChevronDown size={16} />
+                  </button>
+                  
+                  {showUserMenu && (
+                    <div className="user-dropdown">
+                      <div className="user-info">
+                        <p className="user-email">{user.email}</p>
+                        <span className={`user-role user-role-${user.role}`}>
+                          {user.role === 'admin' ? 'Administrador' : 
+                           user.role === 'buyer' ? 'Comprador' : 'Registrado'}
+                        </span>
+                      </div>
+                      {user.role === 'admin' && (
+                        <a href="/admin/import" className="dropdown-link">
+                          <Bot size={16} />
+                          Painel Admin
+                        </a>
+                      )}
+                      <button className="dropdown-button" onClick={() => {
+                        logout();
+                        setShowUserMenu(false);
+                      }}>
+                        <LogOut size={16} />
+                        Sair
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="auth-buttons">
+                  <button 
+                    className="btn-secondary"
+                    onClick={() => setShowLoginModal(true)}
+                  >
+                    <LogIn size={16} />
+                    Entrar
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+      
+      {showLoginModal && (
+        <LoginModal 
+          isOpen={showLoginModal} 
+          onClose={() => setShowLoginModal(false)} 
+        />
+      )}
+    </>
   );
 };
 
