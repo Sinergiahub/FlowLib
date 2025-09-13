@@ -584,6 +584,8 @@ const TemplateCard = ({ template, onClick }) => {
 
 // Template Detail Modal
 const TemplateDetailModal = ({ template, isOpen, onClose }) => {
+  const { user, canDownload, isAuthenticated } = useAuth();
+  
   if (!isOpen || !template) return null;
 
   const getPlatformIcon = (platform) => {
@@ -597,17 +599,62 @@ const TemplateDetailModal = ({ template, isOpen, onClose }) => {
   };
 
   const handleDownload = async () => {
+    if (!canDownload()) {
+      // This should not happen as button is conditionally rendered
+      return;
+    }
+
     try {
       await axios.post(`${API}/templates/${template.id}/download`);
-      // In a real app, this would trigger file download
+      // Track download event
+      await axios.post(`${API}/analytics/download`, {
+        template_slug: template.slug,
+        user_id: user?.id,
+        timestamp: new Date().toISOString()
+      });
+      
       if (template.download_url || template.file_url) {
         window.open(template.download_url || template.file_url, '_blank');
       } else {
-        alert('Download iniciado! (Demo)');
+        // Simulate download
+        const blob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${template.slug}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
       }
     } catch (error) {
       console.error('Erro no download:', error);
     }
+  };
+
+  const getDownloadButton = () => {
+    if (!isAuthenticated()) {
+      return (
+        <button className="btn-auth-required">
+          <LogIn size={18} />
+          Entrar para baixar
+        </button>
+      );
+    }
+
+    if (!canDownload()) {
+      return (
+        <button className="btn-upgrade-required">
+          <Star size={18} />
+          Comprar para baixar
+        </button>
+      );
+    }
+
+    return (
+      <button className="btn-download" onClick={handleDownload}>
+        <Download size={18} />
+        Baixar Template
+      </button>
+    );
   };
 
   const previewImage = template.preview_image_url || template.preview_url || 'https://images.unsplash.com/photo-1518770660439-4636190af475';
@@ -684,10 +731,7 @@ const TemplateDetailModal = ({ template, isOpen, onClose }) => {
             </div>
             
             <div className="modal-actions-enhanced">
-              <button className="btn-download" onClick={handleDownload}>
-                <Download size={18} />
-                Baixar Template
-              </button>
+              {getDownloadButton()}
               {template.tutorial_url && (
                 <button className="btn-tutorial" onClick={() => window.open(template.tutorial_url, '_blank')}>
                   <ExternalLink size={18} />
