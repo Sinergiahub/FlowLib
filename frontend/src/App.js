@@ -343,6 +343,10 @@ const Home = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [usingFallback, setUsingFallback] = useState(false);
   const [filters, setFilters] = useState({
     platforms: [],
     categories: [],
@@ -350,52 +354,100 @@ const Home = () => {
   });
 
   useEffect(() => {
-    loadData();
+    loadInitialData();
   }, []);
 
   useEffect(() => {
     loadTemplates();
-  }, [searchTerm, filters]);
+  }, [searchTerm, filters, currentPage]);
 
-  const loadData = async () => {
+  const loadInitialData = async () => {
     try {
-      const [templatesRes, featuredRes, categoriesRes, toolsRes] = await Promise.all([
-        axios.get(`${API}/templates`),
+      const [featuredRes, categoriesRes, toolsRes] = await Promise.all([
         axios.get(`${API}/featured`),
         axios.get(`${API}/categories`),
         axios.get(`${API}/tools`)
       ]);
 
-      setTemplates(templatesRes.data);
       setFeaturedTemplates(featuredRes.data);
       setCategories(categoriesRes.data);
       setTools(toolsRes.data);
-      setLoading(false);
     } catch (error) {
-      console.error('Erro ao carregar dados:', error);
-      setLoading(false);
+      console.error('Erro ao carregar dados iniciais:', error);
+      // Use fallback data if initial data fails
+      const { fallbackCategories, fallbackTools, fallbackTemplates } = await import('./lib/fallbackData.js');
+      setFeaturedTemplates(fallbackTemplates.slice(0, 6));
+      setCategories(fallbackCategories);
+      setTools(fallbackTools);
+      setUsingFallback(true);
     }
   };
 
   const loadTemplates = async () => {
     try {
+      setLoading(true);
+      
       const params = new URLSearchParams();
+      params.append('page', currentPage.toString());
+      params.append('page_size', '12');
       
       if (searchTerm) params.append('search', searchTerm);
       if (filters.platforms.length > 0) {
-        filters.platforms.forEach(platform => params.append('platform', platform));
+        params.append('platform', filters.platforms[0]); // Single platform for now
       }
       if (filters.categories.length > 0) {
-        filters.categories.forEach(category => params.append('category', category));
+        params.append('category', filters.categories[0]); // Single category for now
       }
       if (filters.tools.length > 0) {
-        filters.tools.forEach(tool => params.append('tool', tool));
+        params.append('tool', filters.tools[0]); // Single tool for now
       }
 
       const response = await axios.get(`${API}/templates?${params.toString()}`);
-      setTemplates(response.data);
+      const data = response.data;
+
+      if (data.total === 0 && currentPage === 1 && !searchTerm && filters.platforms.length === 0 && filters.categories.length === 0 && filters.tools.length === 0) {
+        // Check if database is completely empty by trying to get any template
+        try {
+          const checkResponse = await axios.get(`${API}/templates/legacy?limit=1`);
+          if (checkResponse.data.length === 0) {
+            // Database is empty, use fallback
+            const { fallbackTemplates, fallbackFacets } = await import('./lib/fallbackData.js');
+            setTemplates(fallbackTemplates);
+            setTotalItems(fallbackTemplates.length);
+            setTotalPages(1);
+            setUsingFallback(true);
+            return;
+          }
+        } catch (error) {
+          console.error('Error checking database:', error);
+        }
+      }
+
+      // Use real database data
+      setTemplates(data.items || []);
+      setTotalItems(data.total || 0);
+      setTotalPages(data.total_pages || 1);
+      setUsingFallback(false);
+
+      // Update facets if available
+      if (data.facets && !usingFallback) {
+        // Convert facets back to category/tool objects if needed
+        // This maintains compatibility with existing filter components
+      }
+
     } catch (error) {
-      console.error('Erro ao filtrar templates:', error);
+      console.error('Erro ao carregar templates:', error);
+      
+      // On error, try fallback data
+      if (currentPage === 1) {
+        const { fallbackTemplates } = await import('./lib/fallbackData.js');
+        setTemplates(fallbackTemplates);
+        setTotalItems(fallbackTemplates.length);
+        setTotalPages(1);
+        setUsingFallback(true);
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -403,6 +455,20 @@ const Home = () => {
     setSelectedTemplate(template);
     setModalOpen(true);
   };
+
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
+  if (loading && templates.length === 0) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Carregando automações...</p>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
