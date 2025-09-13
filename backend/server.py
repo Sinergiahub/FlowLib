@@ -30,6 +30,7 @@ app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
 # Models
+# Models
 class User(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     display_name: str
@@ -38,33 +39,60 @@ class User(BaseModel):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class Category(BaseModel):
-    id: str
+    key: str  # primary key (e.g., "marketing", "productivity")
     name: str
-    slug: str
-    description: Optional[str] = None
 
 class Tool(BaseModel):
-    id: str
+    key: str  # primary key (e.g., "openai", "slack")
     name: str
-    slug: str
 
 class Template(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    title: str
     slug: str
-    description: str
-    platform: str  # n8n, Make, Zapier, Voiceflow, etc.
-    author_id: Optional[str] = None
-    author_name: str = "Community"
-    file_url: Optional[str] = None
-    preview_url: Optional[str] = None
+    title: str
+    description: Optional[str] = None
+    platform: str
+    author_name: Optional[str] = None
+    author_email: Optional[str] = None
     tutorial_url: Optional[str] = None
-    status: str = "published"
+    preview_image_url: Optional[str] = None
+    download_url: Optional[str] = None
+    json_url: Optional[str] = None
+    language: str = "pt-BR"
+    status: str = "draft"  # draft, published, archived
+    rating_avg: Optional[float] = None
     downloads_count: int = 0
-    rating_avg: float = 0.0
+    tags: Optional[str] = None
+    notes: Optional[str] = None
+    external_id: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    categories: List[str] = []
-    tools: List[str] = []
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    categories: List[str] = []  # category keys
+    tools: List[str] = []  # tool keys
+
+    @validator('slug')
+    def validate_slug(cls, v):
+        if not re.match(r'^[a-z0-9-]+$', v):
+            raise ValueError('Slug deve conter apenas letras minúsculas, números e hífens')
+        return v
+
+    @validator('rating_avg')
+    def validate_rating(cls, v):
+        if v is not None and (v < 0 or v > 5):
+            raise ValueError('Rating deve estar entre 0 and 5')
+        return v
+
+    @validator('downloads_count')
+    def validate_downloads(cls, v):
+        if v < 0:
+            raise ValueError('Downloads count deve ser >= 0')
+        return v
+
+    @validator('tutorial_url', 'preview_image_url', 'download_url', 'json_url')
+    def validate_urls(cls, v):
+        if v and not (v.startswith('http://') or v.startswith('https://')):
+            raise ValueError('URL deve começar com http:// ou https://')
+        return v
 
 class TemplateCreate(BaseModel):
     title: str
@@ -73,6 +101,12 @@ class TemplateCreate(BaseModel):
     author_name: str = "Community"
     categories: List[str] = []
     tools: List[str] = []
+
+class ImportReport(BaseModel):
+    inserted: int = 0
+    updated: int = 0
+    deleted: int = 0
+    errors: List[str] = []
 
 # Initialize sample data
 @app.on_event("startup")
