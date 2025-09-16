@@ -857,6 +857,8 @@ const Home = () => {
     categories: [],
     tools: []
   });
+  const [showFeatured, setShowFeatured] = useState(false);
+  const [showFavorites, setShowFavorites] = useState(false);
 
   useEffect(() => {
     loadInitialData();
