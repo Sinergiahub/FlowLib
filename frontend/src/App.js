@@ -1028,11 +1028,13 @@ const Home = () => {
   const handleSearch = (term) => {
     setSearchTerm(term);
     setCurrentPage(1); // Reset to first page when searching
+    setTemplates([]); // Clear existing templates
   };
 
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
     setCurrentPage(1); // Reset to first page when filters change
+    setTemplates([]); // Clear existing templates
   };
 
   if (loading && templates.length === 0) {
