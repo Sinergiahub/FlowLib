@@ -425,7 +425,7 @@ const HeroSection = ({ featuredTemplates }) => {
                   </div>
                   <div className="featured-info">
                     <h4>{template.title}</h4>
-                    <p>{template.description.substring(0, 80)}...</p>
+                    <p>{template.description ? template.description.substring(0, 80) + '...' : 'Descrição não disponível'}</p>
                     <div className="featured-meta">
                       <span className="downloads">
                         <Download size={14} />
