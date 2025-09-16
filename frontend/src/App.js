@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import axios from "axios";
-import { Search, Filter, Download, Star, ExternalLink, Users, Zap, Bot, Layers, TrendingUp, Sun, Moon, ChevronDown, LogIn, LogOut, User } from "lucide-react";
+import { Search, Filter, Download, Star, ExternalLink, Users, Zap, Bot, Layers, TrendingUp, Sun, Moon, ChevronDown, LogIn, LogOut, User, Heart, MoreHorizontal } from "lucide-react";
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
