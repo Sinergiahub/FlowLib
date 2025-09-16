@@ -250,10 +250,14 @@ async def fetch_csv_from_url(url: str) -> str:
         raise ValueError(f"Erro ao buscar CSV da URL: {str(e)}")
 
 async def preview_template_row(row: Dict[str, Any], action: str, line_number: int) -> PreviewRow:
-    """Preview a single template row without saving"""
+    """Preview a single template row without saving - RELAXED VALIDATION"""
     
     slug = safe_str_strip(row.get('slug', ''))
     title = safe_str_strip(row.get('title', ''))
+    
+    # Use slug as title if title is empty
+    if not title and slug:
+        title = slug.replace('-', ' ').replace('_', ' ').title()
     
     preview_row = PreviewRow(
         line_number=line_number,
@@ -267,7 +271,7 @@ async def preview_template_row(row: Dict[str, Any], action: str, line_number: in
     
     try:
         if not slug:
-            preview_row.message = "Slug é obrigatório"
+            preview_row.message = "Slug/Key é obrigatório"
             return preview_row
         
         if action == "delete":
@@ -277,38 +281,50 @@ async def preview_template_row(row: Dict[str, Any], action: str, line_number: in
                 preview_row.status = "delete"
                 preview_row.message = f"Template '{title or slug}' será deletado"
             else:
+                preview_row.status = "error"
                 preview_row.message = f"Template com slug '{slug}' não encontrado para exclusão"
             return preview_row
         
-        # Validate data for upsert
+        # Validate data for upsert - but continue even with warnings
         validation_errors = validate_template_data(row)
-        if validation_errors:
-            preview_row.message = "; ".join(validation_errors)
-            return preview_row
         
         # Check if template exists
         existing = supabase.table('templates').select('*').eq('slug', slug).execute()
         
-        # Prepare preview data
+        # Prepare preview data with all available fields
         preview_data = {
             "slug": slug,
-            "title": title,
-            "platform": safe_str_strip(row.get('platform', '')),
-            "author_name": safe_str_strip_or_none(row.get('author_name')),
+            "title": title or f"Template {slug}",
+            "platform": safe_str_strip(row.get('platform', 'n8n')),
+            "author_name": safe_str_strip_or_none(row.get('author_name')) or 'Admin',
+            "description": safe_str_strip_or_none(row.get('description')) or '',
             "categories": parse_pipe_separated(row.get('categories', '')),
             "tools": parse_pipe_separated(row.get('tools', '')),
+            "status": safe_str_strip(row.get('status', 'published'))
         }
         
-        # Add rating and downloads if present
+        # Add rating and downloads if present - with auto-correction
         if 'rating_avg' in row and row['rating_avg'] is not None and not pd.isna(row['rating_avg']):
-            preview_data["rating_avg"] = float(row['rating_avg'])
+            try:
+                rating = float(row['rating_avg'])
+                preview_data["rating_avg"] = max(0, min(5, rating))  # Clamp between 0-5
+            except:
+                preview_data["rating_avg"] = None
         
         if 'downloads_count' in row and row['downloads_count'] is not None and not pd.isna(row['downloads_count']):
-            preview_data["downloads_count"] = int(row['downloads_count'])
+            try:
+                downloads = int(float(row['downloads_count']))
+                preview_data["downloads_count"] = max(0, downloads)  # Ensure non-negative
+            except:
+                preview_data["downloads_count"] = 0
         
         preview_row.data = preview_data
         
-        if existing.data:
+        # Set status and message
+        if validation_errors:
+            preview_row.status = "error"
+            preview_row.message = "; ".join(validation_errors)
+        elif existing.data:
             preview_row.status = "update"
             preview_row.message = f"Template '{title}' será atualizado"
         else:
@@ -318,6 +334,7 @@ async def preview_template_row(row: Dict[str, Any], action: str, line_number: in
         return preview_row
         
     except Exception as e:
+        preview_row.status = "error"
         preview_row.message = f"Erro ao processar linha: {str(e)}"
         return preview_row
 
