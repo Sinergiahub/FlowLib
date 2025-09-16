@@ -810,6 +810,166 @@ async def import_agents(file: UploadFile = File(...)):
     """Import GPT agents from CSV file"""
     return await import_templates(file)
 
+@api_router.post("/templates/{template_id}/favorite")
+async def toggle_favorite(template_id: str, user_id: str = Form(...)):
+    """Toggle favorite status for a template"""
+    try:
+        # Check if already favorited
+        existing = supabase.table('favorites').select('*').eq('user_id', user_id).eq('template_id', template_id).execute()
+        
+        if existing.data:
+            # Remove favorite
+            supabase.table('favorites').delete().eq('user_id', user_id).eq('template_id', template_id).execute()
+            return {"favorited": False, "message": "Removido dos favoritos"}
+        else:
+            # Add favorite
+            supabase.table('favorites').insert({
+                "user_id": user_id,
+                "template_id": template_id
+            }).execute()
+            return {"favorited": True, "message": "Adicionado aos favoritos"}
+            
+    except Exception as e:
+        logger.error(f"Error toggling favorite: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao alterar favorito: {str(e)}")
+
+@api_router.post("/templates/{template_id}/rate")
+async def rate_template(template_id: str, user_id: str = Form(...), rating: int = Form(...)):
+    """Rate a template (1-5 stars)"""
+    if rating < 1 or rating > 5:
+        raise HTTPException(status_code=400, detail="Rating deve estar entre 1 e 5")
+    
+    try:
+        # Upsert rating (insert or update)
+        result = supabase.table('ratings').upsert({
+            "user_id": user_id,
+            "template_id": template_id,
+            "rating": rating,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }).execute()
+        
+        return {"success": True, "rating": rating, "message": f"Avaliação de {rating} estrelas registrada"}
+        
+    except Exception as e:
+        logger.error(f"Error rating template: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Erro ao avaliar template: {str(e)}")
+
+@api_router.get("/user/{user_id}/favorites")
+async def get_user_favorites(user_id: str):
+    """Get user's favorite templates"""
+    try:
+        result = supabase.table('favorites').select('template_id').eq('user_id', user_id).execute()
+        template_ids = [fav['template_id'] for fav in result.data]
+        return {"template_ids": template_ids}
+    except Exception as e:
+        logger.error(f"Error getting favorites: {str(e)}")
+        return {"template_ids": []}
+
+def get_templates_with_user_data(
+    user_id: Optional[str] = None,
+    search: Optional[str] = None,
+    platform: Optional[str] = None,
+    category: Optional[str] = None,
+    tool: Optional[str] = None,
+    page: int = 1,
+    page_size: int = 15  # Changed default to 15
+) -> PaginatedTemplateResponse:
+    """Get templates with user-specific data (favorites, ratings)"""
+    
+    try:
+        # Start with base query
+        query = supabase.table('templates').select('*', count='exact').eq('status', 'published')
+        
+        # Add platform filter
+        if platform:
+            query = query.eq('platform', platform)
+        
+        # Add category filter
+        if category:
+            query = query.contains('categories', [category])
+        
+        # Add tool filter
+        if tool:
+            query = query.contains('tools', [tool])
+        
+        # Enhanced search functionality
+        if search:
+            search_term = search.lower().strip()
+            search_query = f"title.ilike.*{search_term}*,description.ilike.*{search_term}*,tags.ilike.*{search_term}*,author_name.ilike.*{search_term}*,platform.ilike.*{search_term}*"
+            query = query.or_(search_query)
+        
+        # Get total count first
+        count_result = query.execute()
+        total = count_result.count if hasattr(count_result, 'count') else len(count_result.data)
+        
+        # Apply pagination and ordering
+        skip = (page - 1) * page_size
+        paginated_query = query.order('downloads_count', desc=True).range(skip, skip + page_size - 1)
+        
+        result = paginated_query.execute()
+        templates = result.data
+        
+        # Get user favorites and ratings if user_id provided
+        user_favorites = set()
+        user_ratings = {}
+        
+        if user_id:
+            try:
+                # Get user favorites
+                favorites_result = supabase.table('favorites').select('template_id').eq('user_id', user_id).execute()
+                user_favorites = {fav['template_id'] for fav in favorites_result.data}
+                
+                # Get user ratings
+                ratings_result = supabase.table('ratings').select('template_id, rating').eq('user_id', user_id).execute()
+                user_ratings = {rating['template_id']: rating['rating'] for rating in ratings_result.data}
+            except Exception as e:
+                logger.error(f"Error getting user data: {str(e)}")
+        
+        # Convert to Template objects with user data
+        template_items = []
+        for template in templates:
+            # Convert datetime strings back to datetime objects
+            if isinstance(template.get('created_at'), str):
+                template['created_at'] = datetime.fromisoformat(template['created_at'].replace('Z', '+00:00'))
+            if isinstance(template.get('updated_at'), str):
+                template['updated_at'] = datetime.fromisoformat(template['updated_at'].replace('Z', '+00:00'))
+            
+            # Add user-specific data
+            template['is_favorited'] = template['id'] in user_favorites
+            template['user_rating'] = user_ratings.get(template['id'])
+            
+            template_items.append(TemplateWithUserData(**template))
+        
+        # Calculate pagination
+        total_pages = (total + page_size - 1) // page_size
+        
+        # Get facets
+        facets = get_template_facets()
+        
+        return PaginatedTemplateResponse(
+            items=template_items,
+            total=total,
+            page=page,
+            page_size=page_size,
+            total_pages=total_pages,
+            facets={
+                "platforms": facets.platforms,
+                "categories": facets.categories,
+                "tools": facets.tools
+            }
+        )
+        
+    except Exception as e:
+        logger.error(f"Error getting templates with user data: {str(e)}")
+        return PaginatedTemplateResponse(
+            items=[],
+            total=0,
+            page=page,
+            page_size=page_size,
+            total_pages=0,
+            facets={"platforms": [], "categories": [], "tools": []}
+        )
+
 # Include router
 app.include_router(api_router)
 
