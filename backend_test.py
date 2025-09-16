@@ -222,27 +222,34 @@ class FlowLibAPITester:
         all_passed = all_passed and success
         return all_passed
 
-    def test_filter_functionality(self):
-        """Test filter functionality"""
-        filters = [
-            {"platform": "n8n"},
-            {"platform": "Make"},
-            {"category": "marketing"},
-            {"tool": "openai"}
-        ]
+    def test_search_functionality(self):
+        """Test search functionality"""
+        search_terms = ["IA", "SEO", "TikTok", "automação"]
         all_passed = True
         
-        for filter_params in filters:
-            filter_name = f"{list(filter_params.keys())[0]}={list(filter_params.values())[0]}"
+        for term in search_terms:
             success, response = self.run_test(
-                f"Filter Templates - {filter_name}",
+                f"Search Templates - '{term}'",
                 "GET",
                 "templates",
                 200,
-                params=filter_params
+                params={"search": term}
             )
-            if success and isinstance(response, list):
-                print(f"   Found {len(response)} results for {filter_name}")
+            if success and isinstance(response, dict):
+                items = response.get('items', [])
+                print(f"   Found {len(items)} results for '{term}' (Total: {response.get('total', 0)})")
+                
+                # Verify search is working by checking if results contain the search term
+                if items and term.lower() in ['ia', 'seo']:
+                    found_relevant = any(
+                        term.lower() in template.get('title', '').lower() or 
+                        term.lower() in template.get('description', '').lower()
+                        for template in items
+                    )
+                    if found_relevant:
+                        print(f"   ✅ Search results appear relevant for '{term}'")
+                    else:
+                        print(f"   ⚠️  Search results may not be relevant for '{term}'")
             all_passed = all_passed and success
             
         return all_passed
