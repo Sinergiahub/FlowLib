@@ -205,6 +205,21 @@ frontend:
         agent: "main"
         comment: "Google Sheets URL input field working, with backend support for converting Google Sheets URLs to CSV export format."
 
+  - task: "Search Functionality"
+    implemented: true
+    working: true
+    file: "server.py, App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported search functionality not working properly"
+      - working: true
+        agent: "main"
+        comment: "FIXED: Enhanced search functionality to search across title, description, tags, author_name, and platform with case-insensitive matching. Added proper search reset on page change. Both backend API and frontend UI now working perfectly."
+
 metadata:
   created_by: "main_agent"
   version: "2.0"
