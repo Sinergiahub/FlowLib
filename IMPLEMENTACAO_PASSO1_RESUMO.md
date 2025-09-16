@@ -193,11 +193,11 @@ O sistema está preparado para receber:
 
 ```bash
 # Teste básico
-curl -X POST "https://flowlib.preview.emergentagent.com/api/import/templates" \
+curl -X POST "https://flowlib-app.preview.emergentagent.com/api/import/templates" \
   -F "file=@/app/test-import.csv"
 
 # Verificar template importado
-curl "https://flowlib.preview.emergentagent.com/api/templates/slug/chatbot-vendas-ia"
+curl "https://flowlib-app.preview.emergentagent.com/api/templates/slug/chatbot-vendas-ia"
 ```
 
 ---

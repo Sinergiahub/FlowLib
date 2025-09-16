@@ -214,7 +214,7 @@ O sistema admin está preparado para:
 
 ### **📍 Como Testar:**
 
-1. **Página Admin:** https://flowlib.preview.emergentagent.com/admin/import
+1. **Página Admin:** https://flowlib-app.preview.emergentagent.com/admin/import
 2. **Upload CSV:** Selecionar arquivo → Validar → Ver preview → Importar
 3. **Google Sheets:** Colar URL → Validar → Ver preview
 4. **Verificar:** Dados aparecem na aplicação principal

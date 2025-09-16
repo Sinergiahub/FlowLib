@@ -218,7 +218,7 @@ for category in categories:
 
 ### **📍 Como Testar:**
 
-1. **Homepage:** https://flowlib.preview.emergentagent.com
+1. **Homepage:** https://flowlib-app.preview.emergentagent.com
 2. **API direta:** `GET /api/templates?page=1&page_size=12`
 3. **Buscar "SEO"** → Deve retornar template de automação SEO
 4. **Filtrar por "n8n"** → Deve mostrar 3 templates

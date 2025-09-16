@@ -193,7 +193,7 @@ Ele vai analisar e sugerir melhorias específicas para seu caso.
 
 ### **📍 Como Testar:**
 
-1. **Acessar**: https://flowlib.preview.emergentagent.com
+1. **Acessar**: https://flowlib-app.preview.emergentagent.com
 2. **Scrollar**: Após hero section, encontrar "Agentes GPT"
 3. **Observar**: 5 cards com banners, títulos, descrições
 4. **Hover**: Ver efeitos de animação nos cards e botões

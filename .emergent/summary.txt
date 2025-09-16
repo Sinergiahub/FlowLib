@@ -1,0 +1,132 @@
+<analysis>
+The trajectory details the development of the FlowLib application, an automation workflow management web app, by an AI engineer. The project commenced with an initial MVP build (Dashboard, Template Library, Search/Filters, Detail Pages) using FastAPI, React, and MongoDB, incorporating a modern dark theme and Shadcn UI. Subsequent phases included implementing a CSV import backend for templates, refining the template detail modal, adding a GPT Agents section, and finally, introducing comprehensive authentication with user roles and visual adjustments. The latest and ongoing critical task involves migrating the entire backend data layer from MongoDB to Supabase PostgreSQL, while maintaining existing API contracts and frontend compatibility, alongside resolving some frontend import validation issues. The user expressed frustration over credit consumption on incomplete tasks, emphasizing the need for a complete and functional delivery for the Supabase migration.
+</analysis>
+
+<product_requirements>
+The goal is to build a responsive web application named FlowLib (initially AutomaçãoHub) for managing automation flows (n8n, Make, Zapier).
+
+**Core Features:**
+*   **User Authentication:** Email/password login, Google OAuth2, password recovery. User roles (Admin, Pro, Free) with access rules for viewing, downloading, and admin functions.
+*   **Dashboard:** Highlights for trending automations, search bar with autocomplete, sidebar filters (Platform, Category, Tools, Tags).
+*   **Automation Library:** Responsive cards displaying Name, Short Description, Author, Tags, Tools. Each card links to a detail page.
+*   **Detail Page:** Full Name, Description, Author, Publication Date, Tools used, Flow Preview (image/diagram), Video Tutorial (YouTube link/player), Action buttons (Use Template, Download JSON/YAML, View Tutorial), Metrics (downloads, ratings, favorites).
+*   **User Contribution:** Upload new templates (JSON/YAML) with admin approval workflow. Author credits visible.
+*   **Admin Panel (Planned):** CRUD for templates, categories, tools. Approval workflow (draft, pending, approved, rejected). CSV import with preview, Google Sheets integration. Role-based access.
+*   **Data Structure:** Users, Templates, Categories, Tools, Downloads, Favorites tables with relationships.
+*   **Design & UX:** Modern card-based layout (Sabrina.dev inspired), automatic Dark/Light mode, clean/intuitive UI, responsive grid, featured automation carousel. Centralized hero section, global footer.
+*   **Backend:** FastAPI (Python). Initially MongoDB, migrating to Supabase PostgreSQL. REST API.
+*   **Frontend:** React, Tailwind CSS, Shadcn UI.
+*   **Import CSV Backend:** Endpoint to mass import templates via CSV (upsert/delete by slug), with validation and a JSON report.
+*   **Telemetry:** Tracking for download events and agent clicks.
+
+**Current State & Nuances:**
+The application has a functional frontend with a homepage displaying mock templates, search, filters, and a polished detail modal. A GPT Agents section and a global footer are implemented. Authentication with email/password and user roles (Admin, Buyer, Registered, Anon) is set up, with Google OAuth prepared but disabled. The backend currently uses MongoDB and has CSV import/preview endpoints. The immediate task is to migrate the backend to Supabase PostgreSQL.
+</product_requirements>
+
+<key_technical_concepts>
+- **Backend:** FastAPI (Python), MongoDB (initial), Supabase PostgreSQL (target),  (v2)
+- **Frontend:** React, Tailwind CSS, Shadcn UI components, 
+- **Data Handling:** Pydantic for models, MongoDB aggregation, SQL queries for Supabase, CSV parsing, UUIDs
+- **Authentication:** OAuth2 (Google), Email/Password, Magic Link, Role-Based Access Control (RBAC)
+- **Deployment:** Kubernetes container environment, Supervisor for service control
+- **UI/UX:** Responsive design, Dark/Light mode toggle, Glass-morphism, Micro-animations
+</key_technical_concepts>
+
+<code_architecture>
+
+-   ****: The core FastAPI application.
+    -   **Summary**: Contains API endpoints for templates, categories, tools, featured items, and the CSV import/preview functionality. Manages database connection (currently MongoDB, targeted for Supabase), CORS, and data models.
+    -   **Changes Made**:
+        -   Initial setup with MongoDB connection.
+        -   Added CSV import () and preview () endpoints, including validation logic.
+        -   Implemented  endpoint with pagination, search, filters, and facet generation.
+        -   Refined CSV parsing and validation, particularly for handling empty fields and specific validation rules (e.g., slug format, rating range).
+        -   Integrated authentication logic for user roles and download permissions (though DB migration is pending).
+-   ****: Environment variables for the backend.
+    -   **Summary**: Stores database connection strings (e.g., ), and other backend configurations.
+    -   **Changes Made**: Initial MongoDB variables, later to be updated for Supabase (, , etc.).
+-   ****: Main React application component.
+    -   **Summary**: Sets up routing for the application (, , , ). Integrates global contexts (Theme, Auth) and renders main page components like Header, Hero, Featured, Template List, Agents Section, and Footer.
+    -   **Changes Made**:
+        -   Integrated  and  providers.
+        -   Added routes for .
+        -   Included , , , , , and  components.
+        -   Implemented  for authentication.
+-   ****: Global CSS styles.
+    -   **Summary**: Contains Tailwind CSS imports and custom styles for various components, including global typography, dark/light mode variables, and specific component styles.
+    -   **Changes Made**:
+        -   Styles for fallback data indicator.
+        -   Styling for the enhanced template detail modal.
+        -   CSS for the GPT Agents section cards and layout.
+        -   Styling for the  component.
+        -   Centralization styles for .
+        -   Styles for  and theme toggle.
+-   ****: Admin page for CSV imports.
+    -   **Summary**: Provides UI for uploading CSV files or entering Google Sheets URLs, validating input, and initiating the template import process. Displays a preview table.
+    -   **Changes Made**: Initial creation and implementation of the UI and logic for CSV import.
+-   ****: Mock data for templates.
+    -   **Summary**: Provides a set of mock template data used when the database is empty or not connected, ensuring the UI remains functional.
+    -   **Changes Made**: Created to externalize mock data, used as a fallback for the  endpoint.
+-   ****: Component for displaying GPT agents.
+    -   **Summary**: Renders individual cards for GPT agents, including a banner, title, description, and a button to open the GPT link.
+    -   **Changes Made**: Created to display GPT agents on the homepage.
+-   ****: React context for authentication.
+    -   **Summary**: Manages user authentication state, including login/logout functions, user roles, and profile information.
+    -   **Changes Made**: Created to provide authentication context throughout the application.
+-   ****: React context for theme management.
+    -   **Summary**: Manages the application's theme (dark/light mode) and provides a toggle function.
+    -   **Changes Made**: Created to manage and persist theme preferences.
+-   ****: Application header component.
+    -   **Summary**: Displays the application logo, navigation elements, dark/light mode toggle, and user authentication status/menu.
+    -   **Changes Made**: Updated to include theme toggle, Ir para Agentes GPT button, and user/admin dropdown menus.
+-   ****: Login modal component.
+    -   **Summary**: Provides a modal interface for user login, offering email/password and Google OAuth options.
+    -   **Changes Made**: Created to handle user authentication.
+-   ****: Hero section of the homepage.
+    -   **Summary**: Displays the main headline, description, and key metrics.
+    -   **Changes Made**: Updated to centralize text and metrics as per user request.
+-   ****: Modal for template details.
+    -   **Summary**: Displays comprehensive information about a selected template, including image preview, metadata, tags, tools, and action buttons.
+    -   **Changes Made**:
+        -   Polished layout with large image on the left and details on the right.
+        -   Integrated  function.
+        -   Implemented dynamic display of download/tutorial buttons based on user roles and template data.
+-   ****: Global footer component.
+    -   **Summary**: Provides institutional links, copyright information, and social media icons.
+    -   **Changes Made**: Created and integrated into .
+</code_architecture>
+
+<pending_tasks>
+- **Supabase Migration:** Complete backend migration from MongoDB to Supabase PostgreSQL, including schema definition, data layer rewrite, and full API integration.
+- **Supabase Admin Auth:** Full implementation of Supabase Auth for the  routes (currently minimal setup).
+- **Admin Panel CRUD:** Implement full CRUD for templates, categories, and tools in the admin panel.
+- **Google Sheets Integration:** Optional integration for CSV import from Google Sheets URLs.
+- **User Role Upgrade Logic:** Implement webhook/CSV import for updating user roles to 'buyer' based on purchases.
+- **Frontend CSV UI:** Show CSV specification and download example CSV button on .
+</pending_tasks>
+
+<current_work>
+The AI engineer is currently tasked with a significant backend migration: transitioning the database from MongoDB to Supabase PostgreSQL. This follows a period where the user experienced issues with incomplete tasks and credit consumption.
+
+The user explicitly requested:
+1.  **Confirmation of MongoDB dependencies:** Identify where MongoDB drivers, variables, and collections are used in the current backend.
+2.  **Migration to Supabase:**
+    *   Update  with Supabase credentials and other environment variables.
+    *   Define the Supabase SQL schema for , , and  tables.
+    *   Rewrite the data access layer to use  (v2) instead of /.
+    *   Reimplement existing API endpoints ( with filters, pagination, facets; , , , , , , ) to work with Supabase.
+3.  **CSV Importer Adjustments:**
+    *   Maintain current  and  behavior.
+    *   Enforce  and  as mandatory CSV columns, and  as required.
+    *   Handle  and  in CSV as pipe-separated values that convert to  arrays in Postgres.
+    *   Return the same JSON report format (, , , ).
+    *   Add a CSV Specification block and a download example CSV button to the  UI.
+4.  **Admin Authentication:** Implement minimal Supabase Auth (email/password) for admin protection, or leave clear s if budget is a concern.
+5.  **CORS and Frontend :** Ensure CORS is configured for localhost and the preview domain, and update the frontend  for .
+
+The AI engineer has acknowledged the user's concerns about previous incomplete tasks and explicitly stated the intention to deliver a complete and functional solution, starting with the installation of the  library.
+</current_work>
+
+<optional_next_step>
+The next step is to install the  library in the backend to begin the Supabase integration.
+</optional_next_step>
