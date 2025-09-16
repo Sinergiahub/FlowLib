@@ -703,36 +703,60 @@ class FlowLibAPITester:
             return False
 
 def main():
-    print("🚀 Starting FlowLib API Tests - Including CSV Import Features")
-    print("=" * 60)
+    print("🚀 Starting FlowLib API Tests - Comprehensive Supabase Migration Testing")
+    print("=" * 70)
     
     tester = FlowLibAPITester()
     
-    # Run all tests
-    tests = [
-        tester.test_root_endpoint,
+    # Core API Tests
+    print("\n📋 CORE API ENDPOINTS")
+    print("-" * 30)
+    core_tests = [
         tester.test_get_templates,
         tester.test_get_template_by_id,
+        tester.test_template_by_slug,
         tester.test_get_categories,
         tester.test_get_tools,
         tester.test_get_featured_templates,
+    ]
+    
+    # Search & Filter Tests  
+    print("\n🔍 SEARCH & FILTERING")
+    print("-" * 30)
+    search_tests = [
         tester.test_search_functionality,
         tester.test_filter_functionality,
-        tester.test_download_tracking,
-        tester.test_invalid_template_id,
-        tester.test_template_by_slug,
+        tester.test_pagination_functionality,
+    ]
+    
+    # Import & CSV Tests
+    print("\n📤 IMPORT & CSV FUNCTIONALITY")
+    print("-" * 30)
+    import_tests = [
         tester.test_csv_preview_with_file,
         tester.test_csv_preview_with_errors,
         tester.test_csv_preview_invalid_input,
-        tester.test_google_sheets_url_conversion,
+        tester.test_import_specific_endpoints,
         tester.test_csv_import_basic,
         tester.test_csv_import_update_delete,
         tester.test_csv_import_validation_errors,
         tester.test_csv_import_invalid_file,
-        tester.verify_imported_data
     ]
     
-    for test in tests:
+    # Additional Tests
+    print("\n🔧 ADDITIONAL FUNCTIONALITY")
+    print("-" * 30)
+    additional_tests = [
+        tester.test_download_tracking,
+        tester.test_invalid_template_id,
+        tester.test_google_sheets_url_conversion,
+        tester.verify_imported_data,
+    ]
+    
+    # Run all test categories
+    all_tests = core_tests + search_tests + import_tests + additional_tests
+    
+    for test in all_tests:
         try:
             test()
         except Exception as e:
@@ -740,19 +764,35 @@ def main():
             tester.errors.append(f"{test.__name__}: {str(e)}")
     
     # Print final results
-    print("\n" + "=" * 60)
-    print(f"📊 Final Results: {tester.tests_passed}/{tester.tests_run} tests passed")
+    print("\n" + "=" * 70)
+    print(f"📊 FINAL RESULTS: {tester.tests_passed}/{tester.tests_run} tests passed")
     
+    # Critical Issues (Schema/Database problems)
+    if tester.critical_errors:
+        print(f"\n🚨 CRITICAL ISSUES (Database/Schema):")
+        for error in tester.critical_errors:
+            print(f"   • {error}")
+    
+    # Regular Issues
     if tester.errors:
-        print(f"\n🚨 Failed Tests:")
+        print(f"\n⚠️  REGULAR ISSUES:")
         for error in tester.errors:
             print(f"   • {error}")
     
-    if tester.tests_passed == tester.tests_run:
-        print("🎉 All tests passed! Backend API is working correctly.")
+    # Success Summary
+    success_rate = (tester.tests_passed / tester.tests_run) * 100 if tester.tests_run > 0 else 0
+    
+    if tester.critical_errors:
+        print(f"\n🔴 CRITICAL: Database schema issues detected - Supabase migration incomplete")
+        return 2  # Critical failure
+    elif success_rate >= 80:
+        print(f"🟢 GOOD: {success_rate:.1f}% success rate - Most functionality working")
         return 0
+    elif success_rate >= 60:
+        print(f"🟡 MODERATE: {success_rate:.1f}% success rate - Some issues need attention")
+        return 1
     else:
-        print(f"⚠️  {tester.tests_run - tester.tests_passed} tests failed.")
+        print(f"🔴 POOR: {success_rate:.1f}% success rate - Major issues detected")
         return 1
 
 if __name__ == "__main__":
