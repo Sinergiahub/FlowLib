@@ -841,45 +841,60 @@ const Home = () => {
     }
   };
 
-  const loadTemplates = async () => {
+  const loadTemplates = async (isLoadMore = false) => {
     try {
-      setLoading(true);
+      if (!isLoadMore) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+      
+      const pageToLoad = isLoadMore ? currentPage + 1 : 1;
       
       const params = new URLSearchParams();
-      params.append('page', currentPage.toString());
-      params.append('page_size', '12');
+      params.append('page', pageToLoad.toString());
+      params.append('page_size', '15'); // Changed to 15 as requested
+      params.append('user_id', userId); // Add user_id for favorites/ratings
       
       if (searchTerm) params.append('search', searchTerm);
       if (filters.platforms.length > 0) {
-        params.append('platform', filters.platforms[0]); // Single platform for now
+        params.append('platform', filters.platforms[0]);
       }
       if (filters.categories.length > 0) {
-        params.append('category', filters.categories[0]); // Single category for now
+        params.append('category', filters.categories[0]);
       }
       if (filters.tools.length > 0) {
-        params.append('tool', filters.tools[0]); // Single tool for now
+        params.append('tool', filters.tools[0]);
       }
 
       const response = await axios.get(`${API}/templates?${params.toString()}`);
       const data = response.data;
 
-      // Use real database data
-      setTemplates(data.items || []);
+      if (isLoadMore) {
+        // Append new templates to existing ones
+        setTemplates(prevTemplates => [...prevTemplates, ...data.items]);
+        setCurrentPage(pageToLoad);
+      } else {
+        // Replace templates
+        setTemplates(data.items || []);
+        setCurrentPage(1);
+      }
+      
       setTotalItems(data.total || 0);
       setTotalPages(data.total_pages || 1);
+      setHasMore(pageToLoad < (data.total_pages || 1));
       setUsingFallback(false);
 
       // Only use fallback if we have no templates at all and it's the initial load
-      if (data.total === 0 && currentPage === 1 && !searchTerm && filters.platforms.length === 0 && filters.categories.length === 0 && filters.tools.length === 0) {
-        // Check if database is completely empty by trying to get any template
+      if (data.total === 0 && !isLoadMore && !searchTerm && filters.platforms.length === 0 && filters.categories.length === 0 && filters.tools.length === 0) {
         try {
           const checkResponse = await axios.get(`${API}/templates/legacy?limit=1`);
           if (checkResponse.data.length === 0) {
-            // Database is empty, use fallback
             const { fallbackTemplates } = await import('./lib/fallbackData.js');
             setTemplates(fallbackTemplates);
             setTotalItems(fallbackTemplates.length);
             setTotalPages(1);
+            setHasMore(false);
             setUsingFallback(true);
             return;
           }
@@ -891,16 +906,66 @@ const Home = () => {
     } catch (error) {
       console.error('Erro ao carregar templates:', error);
       
-      // On error, try fallback data
-      if (currentPage === 1) {
+      if (!isLoadMore) {
         const { fallbackTemplates } = await import('./lib/fallbackData.js');
         setTemplates(fallbackTemplates);
         setTotalItems(fallbackTemplates.length);
         setTotalPages(1);
+        setHasMore(false);
         setUsingFallback(true);
       }
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const handleLoadMore = () => {
+    if (!loadingMore && hasMore) {
+      loadTemplates(true);
+    }
+  };
+
+  const handleFavoriteToggle = async (templateId) => {
+    try {
+      const formData = new FormData();
+      formData.append('user_id', userId);
+      
+      const response = await axios.post(`${API}/templates/${templateId}/favorite`, formData);
+      
+      // Update template in state
+      setTemplates(prevTemplates => 
+        prevTemplates.map(template => 
+          template.id === templateId 
+            ? { ...template, is_favorited: response.data.favorited }
+            : template
+        )
+      );
+      
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
+  };
+
+  const handleRating = async (templateId, rating) => {
+    try {
+      const formData = new FormData();
+      formData.append('user_id', userId);
+      formData.append('rating', rating.toString());
+      
+      await axios.post(`${API}/templates/${templateId}/rate`, formData);
+      
+      // Update template in state
+      setTemplates(prevTemplates => 
+        prevTemplates.map(template => 
+          template.id === templateId 
+            ? { ...template, user_rating: rating }
+            : template
+        )
+      );
+      
+    } catch (error) {
+      console.error('Error rating template:', error);
     }
   };
 
