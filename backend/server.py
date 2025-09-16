@@ -411,19 +411,24 @@ def get_templates_with_filters(
         # Start with base query
         query = supabase.table('templates').select('*', count='exact').eq('status', 'published')
         
-        # Add filters
+        # Add platform filter
         if platform:
             query = query.eq('platform', platform)
         
+        # Add category filter
         if category:
             query = query.contains('categories', [category])
         
+        # Add tool filter
         if tool:
             query = query.contains('tools', [tool])
         
+        # Enhanced search functionality
         if search:
-            # For text search, we'll use ilike on title and description
-            query = query.or_(f'title.ilike.%{search}%,description.ilike.%{search}%')
+            search_term = search.lower().strip()
+            # Use text search on multiple fields with case-insensitive matching
+            search_query = f"title.ilike.*{search_term}*,description.ilike.*{search_term}*,tags.ilike.*{search_term}*,author_name.ilike.*{search_term}*,platform.ilike.*{search_term}*"
+            query = query.or_(search_query)
         
         # Get total count first
         count_result = query.execute()
