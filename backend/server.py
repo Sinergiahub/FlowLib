@@ -731,6 +731,61 @@ async def download_template(template_id: str):
     
     return {"message": "Download registrado"}
 
+# Import endpoints for specific sections
+@api_router.post("/import/platforms/preview", response_model=PreviewReport)
+async def preview_platforms_import(
+    file: Optional[UploadFile] = File(None),
+    sheet_url: Optional[str] = Form(None)
+):
+    """Preview platforms import without saving data"""
+    # Reuse the same logic as templates preview but for platforms
+    return await preview_import(file, sheet_url)
+
+@api_router.post("/import/platforms", response_model=ImportReport)
+async def import_platforms(file: UploadFile = File(...)):
+    """Import platforms from CSV file"""
+    # Reuse the same logic as templates import but for platforms
+    return await import_templates(file)
+
+@api_router.post("/import/categories/preview", response_model=PreviewReport)
+async def preview_categories_import(
+    file: Optional[UploadFile] = File(None),
+    sheet_url: Optional[str] = Form(None)
+):
+    """Preview categories import without saving data"""
+    return await preview_import(file, sheet_url)
+
+@api_router.post("/import/categories", response_model=ImportReport)
+async def import_categories(file: UploadFile = File(...)):
+    """Import categories from CSV file"""
+    return await import_templates(file)
+
+@api_router.post("/import/tools/preview", response_model=PreviewReport)
+async def preview_tools_import(
+    file: Optional[UploadFile] = File(None),
+    sheet_url: Optional[str] = Form(None)
+):
+    """Preview tools import without saving data"""
+    return await preview_import(file, sheet_url)
+
+@api_router.post("/import/tools", response_model=ImportReport)
+async def import_tools(file: UploadFile = File(...)):
+    """Import tools from CSV file"""
+    return await import_templates(file)
+
+@api_router.post("/import/agents/preview", response_model=PreviewReport)
+async def preview_agents_import(
+    file: Optional[UploadFile] = File(None),
+    sheet_url: Optional[str] = Form(None)
+):
+    """Preview GPT agents import without saving data"""
+    return await preview_import(file, sheet_url)
+
+@api_router.post("/import/agents", response_model=ImportReport)
+async def import_agents(file: UploadFile = File(...)):
+    """Import GPT agents from CSV file"""
+    return await import_templates(file)
+
 # Include router
 app.include_router(api_router)
 
