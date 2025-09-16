@@ -15,7 +15,7 @@ class FlowLibAPITester:
         self.errors = []
         self.critical_errors = []
 
-    def log_test(self, name, success, details=""):
+    def log_test(self, name, success, details="", is_critical=False):
         """Log test result"""
         self.tests_run += 1
         if success:
@@ -25,7 +25,10 @@ class FlowLibAPITester:
             print(f"❌ {name}")
             if details:
                 print(f"   Details: {details}")
-                self.errors.append(f"{name}: {details}")
+                if is_critical:
+                    self.critical_errors.append(f"{name}: {details}")
+                else:
+                    self.errors.append(f"{name}: {details}")
 
     def run_test(self, name, method, endpoint, expected_status, data=None, params=None):
         """Run a single API test"""
