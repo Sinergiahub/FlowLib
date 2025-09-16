@@ -182,27 +182,33 @@ const AdminImport = () => {
     
     switch (activeSection) {
       case 'templates':
-        csvContent = `action,slug,title,description,platform,author_name,categories,tools,rating_avg,downloads_count
-upsert,exemplo-template,Exemplo Template,Descrição do exemplo,n8n,Autor Exemplo,produtividade|marketing,openai|slack,4.5,100`;
+        csvContent = `action,slug,title,description,platform,author_name,categories,tools,downloads_count
+upsert,exemplo-simples,Exemplo Simples,Descrição básica,n8n,Admin,produtividade,openai,100
+upsert,exemplo-completo,Exemplo Completo,Descrição detalhada do template,Make,Autor Teste,marketing|vendas,make|gmail|slack,250
+delete,template-antigo,,,,,,,`;
         break;
       case 'platforms':
         csvContent = `action,key,name,description
-upsert,n8n,n8n,Ferramenta de automação visual
-upsert,zapier,Zapier,Plataforma de automação no-code`;
+upsert,n8n,n8n,Automação visual open-source
+upsert,zapier,Zapier,Plataforma no-code popular
+delete,plataforma-antiga,,,`;
         break;
       case 'categories':
         csvContent = `action,key,name,description
-upsert,produtividade,Produtividade,Templates para aumentar produtividade
-upsert,marketing,Marketing,Templates para automação de marketing`;
+upsert,produtividade,Produtividade,Templates para produtividade
+upsert,marketing,Marketing,Automação de marketing
+delete,categoria-antiga,,,`;
         break;
       case 'tools':
         csvContent = `action,key,name,description
-upsert,openai,OpenAI,Inteligência artificial GPT
-upsert,slack,Slack,Ferramenta de comunicação`;
+upsert,openai,OpenAI,Inteligência artificial
+upsert,slack,Slack,Comunicação em equipe
+delete,ferramenta-antiga,,,`;
         break;
       case 'agents':
         csvContent = `action,slug,name,description,gpt_link,category
-upsert,assistente-vendas,Assistente de Vendas,GPT para auxiliar em vendas,https://chat.openai.com/g/exemplo,vendas`;
+upsert,assistente-ia,Assistente IA,GPT para automação,https://chat.openai.com/g/exemplo,assistente
+delete,agente-antigo,,,,,`;
         break;
     }
 
