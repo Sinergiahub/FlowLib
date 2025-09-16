@@ -1187,6 +1187,39 @@ body {
   gap: 24px;
 }
 
+/* Filter Checkboxes */
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.filter-option:hover {
+  background: var(--bg-secondary);
+}
+
+.filter-option input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #ff6b35;
+}
+
+.filter-option span {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+/* Special Filters Section */
+.filter-section:first-child {
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
 /* Template Card Enhancements */
 .template-header {
   display: flex;
