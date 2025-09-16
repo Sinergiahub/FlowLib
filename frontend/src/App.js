@@ -414,34 +414,7 @@ const HeroSection = ({ featuredTemplates }) => {
           </div>
         </div>
         
-        {featuredTemplates.length > 0 && (
-          <div className="featured-carousel">
-            <h3 className="featured-title">🔥 Automações em Destaque</h3>
-            <div className="featured-grid">
-              {featuredTemplates.slice(0, 3).map((template) => (
-                <div key={template.id} className="featured-card" onClick={() => { setSelectedTemplate(template); setModalOpen(true); }}>
-                  <div className="featured-image">
-                    <img src={template.preview_image_url || template.preview_url} alt={template.title} />
-                  </div>
-                  <div className="featured-info">
-                    <h4>{template.title}</h4>
-                    <p>{template.description ? template.description.substring(0, 80) + '...' : 'Descrição não disponível'}</p>
-                    <div className="featured-meta">
-                      <span className="downloads">
-                        <Download size={14} />
-                        {(template.downloads_count || 0).toLocaleString()}
-                      </span>
-                      <span className="rating">
-                        <Star size={14} />
-                        {template.rating_avg || 'N/A'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Removed featured section due to errors */}
       </div>
     </section>
   );
