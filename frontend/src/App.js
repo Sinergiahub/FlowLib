@@ -898,9 +898,9 @@ const Home = () => {
     setModalOpen(true);
   };
 
-  const handleFilterChange = (newFilters) => {
-    setFilters(newFilters);
-    setCurrentPage(1); // Reset to first page when filters change
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    setCurrentPage(1); // Reset to first page when searching
   };
 
   if (loading && templates.length === 0) {
