@@ -94,6 +94,25 @@ class Template(BaseModel):
             raise ValueError('URL deve começar com http:// ou https://')
         return v
 
+# New models for favorites and ratings
+class Favorite(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    template_id: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class Rating(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    template_id: str
+    rating: int = Field(..., ge=1, le=5)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class TemplateWithUserData(Template):
+    is_favorited: bool = False
+    user_rating: Optional[int] = None
+
 class ImportReport(BaseModel):
     inserted: int = 0
     updated: int = 0
