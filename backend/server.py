@@ -168,44 +168,59 @@ def parse_pipe_separated(value: str) -> List[str]:
     return [v.strip() for v in str(value).split('|') if v.strip()]
 
 def validate_template_data(row: Dict[str, Any]) -> List[str]:
-    """Validate template data and return list of errors"""
+    """Validate template data and return list of errors - RELAXED VALIDATION"""
     errors = []
     
-    # Required fields
-    if not row.get('slug'):
+    # Required fields - more flexible
+    slug = safe_str_strip(row.get('slug', ''))
+    if not slug:
         errors.append("Slug é obrigatório")
-    elif not re.match(r'^[a-z0-9-]+$', str(row['slug'])):
-        errors.append(f"Slug inválido: {row['slug']} (deve conter apenas letras minúsculas, números e hífens)")
+    elif len(slug) < 2:
+        errors.append("Slug deve ter pelo menos 2 caracteres")
+    elif not re.match(r'^[a-z0-9-_]+$', slug):
+        errors.append(f"Slug inválido: {slug} (apenas letras minúsculas, números, hífens e underscores)")
     
-    if not row.get('platform'):
-        errors.append("Platform é obrigatório")
+    # Platform validation - more flexible
+    platform = safe_str_strip(row.get('platform', ''))
+    if not platform:
+        # Set default platform if not provided
+        row['platform'] = 'n8n'
     
-    # URL validation
+    # URL validation - more relaxed
     url_fields = ['tutorial_url', 'preview_image_url', 'download_url', 'json_url']
     for field in url_fields:
         url = row.get(field)
         if url and not pd.isna(url) and url.strip():
             url_str = str(url).strip()
-            if not (url_str.startswith('http://') or url_str.startswith('https://')):
-                errors.append(f"{field} deve começar com http:// ou https://: {url_str}")
+            # More flexible URL validation
+            if url_str and not (url_str.startswith('http://') or url_str.startswith('https://') or url_str.startswith('/')):
+                # Instead of error, auto-fix by adding https://
+                if '.' in url_str:  # Looks like a domain
+                    row[field] = f"https://{url_str}"
+                else:
+                    errors.append(f"{field} parece ser uma URL inválida: {url_str}")
     
-    # Rating validation
+    # Rating validation - more flexible
     if 'rating_avg' in row and row['rating_avg'] is not None and not pd.isna(row['rating_avg']):
         try:
             rating = float(row['rating_avg'])
-            if rating < 0 or rating > 5:
-                errors.append(f"rating_avg deve estar entre 0 e 5: {rating}")
+            if rating < 0:
+                row['rating_avg'] = 0  # Auto-fix negative ratings
+            elif rating > 5:
+                row['rating_avg'] = 5  # Auto-fix ratings above 5
         except (ValueError, TypeError):
-            errors.append(f"rating_avg deve ser um número: {row['rating_avg']}")
+            # Remove invalid rating instead of error
+            row['rating_avg'] = None
     
-    # Downloads validation
+    # Downloads validation - more flexible
     if 'downloads_count' in row and row['downloads_count'] is not None and not pd.isna(row['downloads_count']):
         try:
-            downloads = int(row['downloads_count'])
+            downloads = int(float(row['downloads_count']))  # Handle decimal numbers
             if downloads < 0:
-                errors.append(f"downloads_count deve ser >= 0: {downloads}")
+                row['downloads_count'] = 0  # Auto-fix negative downloads
         except (ValueError, TypeError):
-            errors.append(f"downloads_count deve ser um número: {row['downloads_count']}")
+            # Set to 0 instead of error
+            row['downloads_count'] = 0
     
     return errors
 
