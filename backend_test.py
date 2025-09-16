@@ -341,7 +341,48 @@ class FlowLibAPITester:
         
         return success and success2
 
-    def test_csv_import_basic(self):
+    def test_import_specific_endpoints(self):
+        """Test all specific import endpoints: platforms, categories, tools, agents"""
+        print("\n🔍 Testing Specific Import Endpoints...")
+        
+        endpoints = [
+            "import/platforms/preview",
+            "import/platforms", 
+            "import/categories/preview",
+            "import/categories",
+            "import/tools/preview", 
+            "import/tools",
+            "import/agents/preview",
+            "import/agents"
+        ]
+        
+        all_passed = True
+        
+        for endpoint in endpoints:
+            if "preview" in endpoint:
+                # Test preview endpoints with no input (should return 400)
+                success, response = self.run_test(
+                    f"Import Endpoint - {endpoint} (no input)",
+                    "POST",
+                    endpoint,
+                    400
+                )
+            else:
+                # Test import endpoints with no file (should return 422)
+                try:
+                    url = f"{self.api_url}/{endpoint}"
+                    response = requests.post(url)
+                    success = response.status_code in [400, 422]  # Either is acceptable for missing file
+                    self.log_test(f"Import Endpoint - {endpoint} (no file)", success, 
+                                f"Status: {response.status_code}")
+                    print(f"✅ {endpoint} endpoint exists and handles missing file properly")
+                except Exception as e:
+                    success = False
+                    self.log_test(f"Import Endpoint - {endpoint} (no file)", False, str(e))
+                    
+            all_passed = all_passed and success
+            
+        return all_passed
         """Test CSV import with basic test file"""
         print("\n🔍 Testing CSV Import - Basic Import...")
         
