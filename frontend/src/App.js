@@ -419,7 +419,7 @@ const HeroSection = ({ featuredTemplates }) => {
             <h3 className="featured-title">🔥 Automações em Destaque</h3>
             <div className="featured-grid">
               {featuredTemplates.slice(0, 3).map((template) => (
-                <div key={template.id} className="featured-card">
+                <div key={template.id} className="featured-card" onClick={() => handleTemplateClick(template)}>
                   <div className="featured-image">
                     <img src={template.preview_image_url || template.preview_url} alt={template.title} />
                   </div>
@@ -429,11 +429,11 @@ const HeroSection = ({ featuredTemplates }) => {
                     <div className="featured-meta">
                       <span className="downloads">
                         <Download size={14} />
-                        {template.downloads_count.toLocaleString()}
+                        {(template.downloads_count || 0).toLocaleString()}
                       </span>
                       <span className="rating">
                         <Star size={14} />
-                        {template.rating_avg}
+                        {template.rating_avg || 'N/A'}
                       </span>
                     </div>
                   </div>
