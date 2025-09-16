@@ -930,14 +930,15 @@ const Home = () => {
   const [showFavorites, setShowFavorites] = useState(false);
 
   useEffect(() => {
-    loadInitialData();
+    // Initial load with loading spinner
+    loadTemplates(false, true);
   }, []);
 
   useEffect(() => {
-    // Debounced search effect - only search, no reset
+    // Search and filters - no loading spinner for smooth UX
     const timeoutId = setTimeout(() => {
-      loadTemplates();
-    }, 300); // Reduced to 300ms
+      loadTemplates(false, false); // false = no loading spinner
+    }, 300);
 
     return () => clearTimeout(timeoutId);
   }, [searchTerm, filters, showFeatured, showFavorites]);
