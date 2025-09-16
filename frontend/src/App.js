@@ -419,7 +419,7 @@ const HeroSection = ({ featuredTemplates }) => {
             <h3 className="featured-title">🔥 Automações em Destaque</h3>
             <div className="featured-grid">
               {featuredTemplates.slice(0, 3).map((template) => (
-                <div key={template.id} className="featured-card" onClick={() => setSelectedTemplate(template) || setModalOpen(true)}>
+                <div key={template.id} className="featured-card" onClick={() => { setSelectedTemplate(template); setModalOpen(true); }}>
                   <div className="featured-image">
                     <img src={template.preview_image_url || template.preview_url} alt={template.title} />
                   </div>
