@@ -930,7 +930,8 @@ const Home = () => {
   const [showFavorites, setShowFavorites] = useState(false);
 
   useEffect(() => {
-    // Initial load with loading spinner
+    // Initial load: load data AND templates with loading spinner
+    loadInitialData();
     loadTemplates(false, true);
   }, []);
 
