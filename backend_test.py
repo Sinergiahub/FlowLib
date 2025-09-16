@@ -11,7 +11,9 @@ class FlowLibAPITester:
         self.tests_run = 0
         self.tests_passed = 0
         self.template_ids = []
+        self.template_slugs = []
         self.errors = []
+        self.critical_errors = []
 
     def log_test(self, name, success, details=""):
         """Log test result"""
