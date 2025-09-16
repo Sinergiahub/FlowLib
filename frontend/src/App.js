@@ -1194,6 +1194,8 @@ const Home = () => {
         </div>
       </main>
       
+      <MassDownloadSection />
+      
       <AgentsSection />
       <Footer />
       
