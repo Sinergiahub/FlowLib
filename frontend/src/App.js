@@ -964,11 +964,11 @@ const Home = () => {
     }
   };
 
-  const loadTemplates = async (isLoadMore = false) => {
+  const loadTemplates = async (isLoadMore = false, showLoadingSpinner = true) => {
     try {
-      if (!isLoadMore) {
+      if (!isLoadMore && showLoadingSpinner) {
         setLoading(true);
-      } else {
+      } else if (isLoadMore) {
         setLoadingMore(true);
       }
       
@@ -988,12 +988,6 @@ const Home = () => {
       }
       if (filters.tools.length > 0) {
         params.append('tool', filters.tools[0]);
-      }
-      if (showFeatured) {
-        params.append('featured', 'true');
-      }
-      if (showFavorites) {
-        params.append('favorites', 'true');
       }
       if (showFeatured) {
         params.append('featured', 'true');
@@ -1032,7 +1026,9 @@ const Home = () => {
         setUsingFallback(true);
       }
     } finally {
-      setLoading(false);
+      if (showLoadingSpinner) {
+        setLoading(false);
+      }
       setLoadingMore(false);
     }
   };
