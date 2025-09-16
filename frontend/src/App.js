@@ -867,19 +867,13 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    loadTemplates();
-  }, [filters]); // Removed searchTerm from dependencies
-
-  useEffect(() => {
-    // Debounced search effect
+    // Debounced search effect - only search, no reset
     const timeoutId = setTimeout(() => {
-      if (searchTerm !== '') {
-        loadTemplates();
-      }
-    }, 500); // 500ms delay
+      loadTemplates();
+    }, 300); // Reduced to 300ms
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm]);
+  }, [searchTerm, filters]);
 
   const loadInitialData = async () => {
     try {
