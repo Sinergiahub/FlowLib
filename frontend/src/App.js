@@ -868,7 +868,18 @@ const Home = () => {
 
   useEffect(() => {
     loadTemplates();
-  }, [searchTerm, filters]); // Removed currentPage dependency
+  }, [filters]); // Removed searchTerm from dependencies
+
+  useEffect(() => {
+    // Debounced search effect
+    const timeoutId = setTimeout(() => {
+      if (searchTerm !== '') {
+        loadTemplates();
+      }
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
 
   const loadInitialData = async () => {
     try {
@@ -1027,8 +1038,7 @@ const Home = () => {
 
   const handleSearch = (term) => {
     setSearchTerm(term);
-    setCurrentPage(1); // Reset to first page when searching
-    setTemplates([]); // Clear existing templates
+    // Don't reset page or templates here - let useEffect handle it
   };
 
   const handleFilterChange = (newFilters) => {
