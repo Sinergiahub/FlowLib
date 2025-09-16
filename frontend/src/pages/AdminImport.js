@@ -443,17 +443,19 @@ delete,agente-antigo,,,,,`;
                   <span className="text-white/60 text-sm">upsert ou delete</span>
                 </div>
                 <div className="flex items-center">
-                  <span className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs mr-2">
+                  <span className="px-2 py-1 bg-orange-500/20 text-orange-400 rounded text-xs mr-2">
                     {activeSection === 'templates' ? 'slug' : 'key'}
                   </span>
-                  <span className="text-white/60 text-sm">Identificador único</span>
+                  <span className="text-white/60 text-sm">Identificador único (ou 'key' como alternativa)</span>
                 </div>
-                {activeSection === 'templates' && (
-                  <div className="flex items-center">
-                    <span className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs mr-2">platform</span>
-                    <span className="text-white/60 text-sm">Plataforma (n8n, Make, Zapier)</span>
-                  </div>
-                )}
+              </div>
+              
+              <h4 className="text-sm font-medium text-white/80 mb-3 mt-4">Auto-Preenchimento:</h4>
+              <div className="space-y-1">
+                <div className="text-xs text-green-400">✅ Campos em branco recebem valores padrão</div>
+                <div className="text-xs text-green-400">✅ URLs são auto-corrigidas (adiciona https://)</div>
+                <div className="text-xs text-green-400">✅ Números inválidos são corrigidos automaticamente</div>
+                <div className="text-xs text-green-400">✅ Platform padrão: n8n</div>
               </div>
             </div>
 
@@ -474,7 +476,15 @@ delete,agente-antigo,,,,,`;
                 )}
                 <div className="flex items-center">
                   <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs mr-2">UTF-8</span>
-                  <span className="text-white/60 text-sm">Codificação obrigatória</span>
+                  <span className="text-white/60 text-sm">Codificação recomendada</span>
+                </div>
+              </div>
+              
+              <div className="mt-4 p-3 bg-blue-500/10 border border-blue-400/30 rounded-md">
+                <div className="text-xs text-blue-400 font-medium mb-1">💡 Dica:</div>
+                <div className="text-xs text-white/70">
+                  Este sistema é flexível! Campos em branco são preenchidos automaticamente. 
+                  Apenas 'action' e um identificador (slug/key) são obrigatórios.
                 </div>
               </div>
             </div>
