@@ -421,12 +421,35 @@ const HeroSection = ({ featuredTemplates }) => {
 };
 
 // Filters Sidebar
-const FiltersSidebar = ({ categories, tools, filters, onFilterChange }) => {
+const FiltersSidebar = ({ categories, tools, filters, onFilterChange, showFeatured, onShowFeaturedChange, showFavorites, onShowFavoritesChange }) => {
   return (
     <aside className="filters-sidebar">
       <div className="filters-header">
         <Filter size={20} />
         <span>Filtros</span>
+      </div>
+
+      {/* Special Filters */}
+      <div className="filter-section">
+        <h4>Especiais</h4>
+        <div className="filter-options">
+          <label className="filter-option">
+            <input
+              type="checkbox"
+              checked={showFeatured}
+              onChange={(e) => onShowFeaturedChange(e.target.checked)}
+            />
+            <span>⭐ Apenas em Destaque</span>
+          </label>
+          <label className="filter-option">
+            <input
+              type="checkbox"
+              checked={showFavorites}
+              onChange={(e) => onShowFavoritesChange(e.target.checked)}
+            />
+            <span>❤️ Apenas Favoritos</span>
+          </label>
+        </div>
       </div>
       
       <div className="filter-section">
