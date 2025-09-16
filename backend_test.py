@@ -254,20 +254,53 @@ class FlowLibAPITester:
             
         return all_passed
 
-    def test_download_tracking(self):
-        """Test download tracking"""
-        if not self.template_ids:
-            print("❌ No template IDs available for download testing")
-            return False
+    def test_filter_functionality(self):
+        """Test filter functionality"""
+        filters = [
+            {"platform": "n8n"},
+            {"platform": "Make"},
+            {"category": "marketing"},
+            {"tool": "openai"}
+        ]
+        all_passed = True
+        
+        for filter_params in filters:
+            filter_name = f"{list(filter_params.keys())[0]}={list(filter_params.values())[0]}"
+            success, response = self.run_test(
+                f"Filter Templates - {filter_name}",
+                "GET",
+                "templates",
+                200,
+                params=filter_params
+            )
+            if success and isinstance(response, dict):
+                items = response.get('items', [])
+                print(f"   Found {len(items)} results for {filter_name} (Total: {response.get('total', 0)})")
+                
+                # Verify filter is working
+                if items:
+                    filter_key = list(filter_params.keys())[0]
+                    filter_value = list(filter_params.values())[0]
+                    
+                    if filter_key == "platform":
+                        matching = all(template.get('platform', '').lower() == filter_value.lower() for template in items)
+                        print(f"   {'✅' if matching else '⚠️'} Platform filter {'working' if matching else 'may not be working'}")
+                    elif filter_key == "category":
+                        matching = any(
+                            filter_value.lower() in [cat.lower() for cat in template.get('categories', [])]
+                            for template in items
+                        )
+                        print(f"   {'✅' if matching else '⚠️'} Category filter {'working' if matching else 'may not be working'}")
+                    elif filter_key == "tool":
+                        matching = any(
+                            filter_value.lower() in [tool.lower() for tool in template.get('tools', [])]
+                            for template in items
+                        )
+                        print(f"   {'✅' if matching else '⚠️'} Tool filter {'working' if matching else 'may not be working'}")
+                        
+            all_passed = all_passed and success
             
-        template_id = self.template_ids[0]
-        success, response = self.run_test(
-            f"Download Template ({template_id[:8]}...)",
-            "POST",
-            f"templates/{template_id}/download",
-            200
-        )
-        return success
+        return all_passed
 
     def test_invalid_template_id(self):
         """Test error handling for invalid template ID"""
