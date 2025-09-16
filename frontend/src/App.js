@@ -928,6 +928,12 @@ const Home = () => {
       if (showFavorites) {
         params.append('favorites', 'true');
       }
+      if (showFeatured) {
+        params.append('featured', 'true');
+      }
+      if (showFavorites) {
+        params.append('favorites', 'true');
+      }
 
       const response = await axios.get(`${API}/templates?${params.toString()}`);
       const data = response.data;
