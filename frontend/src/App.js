@@ -868,7 +868,7 @@ const Home = () => {
 
   useEffect(() => {
     loadTemplates();
-  }, [searchTerm, filters, currentPage]);
+  }, [searchTerm, filters]); // Removed currentPage dependency
 
   const loadInitialData = async () => {
     try {
