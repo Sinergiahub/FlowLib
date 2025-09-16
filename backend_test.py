@@ -357,28 +357,29 @@ class FlowLibAPITester:
         """Test template by slug endpoint"""
         print("\n🔍 Testing Template by Slug Endpoint...")
         
-        # First get a template to test with
-        try:
-            response = requests.get(f"{self.api_url}/templates")
-            if response.status_code == 200 and response.json():
-                template = response.json()[0]
-                slug = template.get('slug')
-                
-                if slug:
-                    # Test getting template by slug
-                    slug_response = requests.get(f"{self.api_url}/templates/slug/{slug}")
-                    success = slug_response.status_code == 200
-                    self.log_test(f"Get template by slug ({slug})", success, f"Status: {slug_response.status_code}")
-                    return success
-                else:
-                    self.log_test("Get template by slug", False, "No slug found in template")
-                    return False
-            else:
-                self.log_test("Get template by slug", False, "No templates available for testing")
-                return False
-        except Exception as e:
-            self.log_test("Get template by slug", False, str(e))
+        if not self.template_slugs:
+            print("❌ No template slugs available for testing")
+            self.log_test("Get template by slug", False, "No slugs available", is_critical=True)
             return False
+            
+        slug = self.template_slugs[0]
+        success, response = self.run_test(
+            f"Get template by slug ({slug})",
+            "GET",
+            f"templates/slug/{slug}",
+            200
+        )
+        if success and isinstance(response, dict):
+            print(f"   Template title: {response.get('title', 'N/A')}")
+            print(f"   Template platform: {response.get('platform', 'N/A')}")
+            
+            # Check if categories and tools are arrays (critical for Supabase migration)
+            categories = response.get('categories', [])
+            tools = response.get('tools', [])
+            print(f"   Categories: {len(categories) if isinstance(categories, list) else 'Not an array'}")
+            print(f"   Tools: {len(tools) if isinstance(tools, list) else 'Not an array'}")
+            
+        return success
 
     def test_csv_preview_with_file(self):
         """Test CSV preview endpoint with file upload"""
