@@ -1052,6 +1052,10 @@ const Home = () => {
               tools={tools}
               filters={filters}
               onFilterChange={handleFilterChange}
+              showFeatured={showFeatured}
+              onShowFeaturedChange={setShowFeatured}
+              showFavorites={showFavorites}
+              onShowFavoritesChange={setShowFavorites}
             />
             
             <div className="templates-section">
