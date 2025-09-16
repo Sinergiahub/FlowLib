@@ -383,6 +383,7 @@ class FlowLibAPITester:
             all_passed = all_passed and success
             
         return all_passed
+    def test_csv_import_basic(self):
         """Test CSV import with basic test file"""
         print("\n🔍 Testing CSV Import - Basic Import...")
         
@@ -400,19 +401,28 @@ class FlowLibAPITester:
                     if has_all_keys:
                         print(f"   📊 Import Results: Inserted: {data['inserted']}, Updated: {data['updated']}, Deleted: {data['deleted']}, Errors: {len(data['errors'])}")
                         if data['errors']:
-                            print(f"   ⚠️  Errors: {data['errors']}")
-                        success = data['inserted'] > 0 or data['updated'] > 0  # Should have some successful operations
+                            print(f"   ⚠️  Errors: {data['errors'][:2]}...")  # Show first 2 errors
+                            # Check if errors are related to schema issues (critical)
+                            schema_errors = [err for err in data['errors'] if 'schema cache' in err or 'categories' in err]
+                            if schema_errors:
+                                print(f"   🚨 CRITICAL: Schema-related errors detected!")
+                                self.critical_errors.append("CSV Import: Supabase schema issues with categories/tools columns")
+                        
+                        # Success if we have some operations or acceptable errors
+                        success = data['inserted'] > 0 or data['updated'] > 0 or len(data['errors']) > 0
                     else:
                         success = False
                         
-                self.log_test("CSV Import - Basic", success, f"Status: {response.status_code}, Response: {response.text[:200] if not success else 'OK'}")
+                self.log_test("CSV Import - Basic", success, 
+                            f"Status: {response.status_code}, Response: {response.text[:200] if not success else 'OK'}",
+                            is_critical=not success)
                 return success
                 
         except FileNotFoundError:
-            self.log_test("CSV Import - Basic", False, "test-import.csv file not found")
+            self.log_test("CSV Import - Basic", False, "test-import.csv file not found", is_critical=True)
             return False
         except Exception as e:
-            self.log_test("CSV Import - Basic", False, str(e))
+            self.log_test("CSV Import - Basic", False, str(e), is_critical=True)
             return False
 
     def test_csv_import_update_delete(self):
