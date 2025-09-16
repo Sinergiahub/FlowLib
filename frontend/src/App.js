@@ -931,7 +931,7 @@ const Home = () => {
         setTemplates(prevTemplates => [...prevTemplates, ...data.items]);
         setCurrentPage(pageToLoad);
       } else {
-        // Replace templates
+        // Replace templates - but don't clear immediately
         setTemplates(data.items || []);
         setCurrentPage(1);
       }
@@ -941,28 +941,10 @@ const Home = () => {
       setHasMore(pageToLoad < (data.total_pages || 1));
       setUsingFallback(false);
 
-      // Only use fallback if we have no templates at all and it's the initial load
-      if (data.total === 0 && !isLoadMore && !searchTerm && filters.platforms.length === 0 && filters.categories.length === 0 && filters.tools.length === 0) {
-        try {
-          const checkResponse = await axios.get(`${API}/templates/legacy?limit=1`);
-          if (checkResponse.data.length === 0) {
-            const { fallbackTemplates } = await import('./lib/fallbackData.js');
-            setTemplates(fallbackTemplates);
-            setTotalItems(fallbackTemplates.length);
-            setTotalPages(1);
-            setHasMore(false);
-            setUsingFallback(true);
-            return;
-          }
-        } catch (error) {
-          console.error('Error checking database:', error);
-        }
-      }
-
     } catch (error) {
       console.error('Erro ao carregar templates:', error);
       
-      if (!isLoadMore) {
+      if (!isLoadMore && !searchTerm) {
         const { fallbackTemplates } = await import('./lib/fallbackData.js');
         setTemplates(fallbackTemplates);
         setTotalItems(fallbackTemplates.length);
