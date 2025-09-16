@@ -859,8 +859,6 @@ const Home = () => {
   });
   const [showFeatured, setShowFeatured] = useState(false);
   const [showFavorites, setShowFavorites] = useState(false);
-  const [showFeatured, setShowFeatured] = useState(false);
-  const [showFavorites, setShowFavorites] = useState(false);
 
   useEffect(() => {
     loadInitialData();
