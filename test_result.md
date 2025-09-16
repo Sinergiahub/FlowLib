@@ -101,3 +101,182 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Testar completamente o backend FlowLib migrado para Supabase: endpoints /api/templates, /api/categories, /api/tools, /api/featured, /api/templates/{id}, /api/templates/slug/{slug}, /api/import/preview, /api/import/templates, e todos os novos endpoints de import específicos (platforms, categories, tools, agents). Verificar se migração MongoDB → Supabase funcionando, CSV import/preview funcionando, facets sendo gerados corretamente, paginação funcionando, tratamento de erros adequado."
+
+backend:
+  - task: "Templates API with Pagination and Filtering"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ WORKING: /api/templates endpoint fully functional with pagination (items, total, page, page_size, total_pages, facets). Found 2 templates, pagination working correctly, search functionality working for 'IA' and 'automação' terms. Platform filters working correctly (n8n, Make). Template structure includes all required fields."
+
+  - task: "Template by ID API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ WORKING: /api/templates/{id} endpoint working correctly. Returns complete template data with all fields. Error handling working for non-existent UUIDs (404). Invalid UUID format returns 500 (acceptable for UUID validation)."
+
+  - task: "Template by Slug API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ WORKING: /api/templates/slug/{slug} endpoint working correctly. Successfully retrieves templates by slug. Returns complete template data including categories and tools arrays (though currently empty due to schema issues)."
+
+  - task: "Categories API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ WORKING: /api/categories endpoint working correctly. Returns 4 categories (Marketing, Vendas, Redes Sociais, etc.) with proper structure (key, name)."
+
+  - task: "Tools API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ WORKING: /api/tools endpoint working correctly. Returns 5 tools (Openai, Slack, Gmail, etc.) with proper structure (key, name)."
+
+  - task: "Featured Templates API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ WORKING: /api/featured endpoint working correctly. Returns 2 featured templates ordered by rating_avg."
+
+  - task: "CSV Import Preview API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ WORKING: /api/import/preview endpoint working correctly. Successfully processes CSV files and returns preview with proper structure (total_rows, insert_count, update_count, delete_count, error_count, rows). Validation errors properly detected and reported. File upload validation working (400 for no input)."
+
+  - task: "CSV Import Templates API"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "❌ CRITICAL ISSUE: /api/import/templates has Supabase schema problems. Error: 'Could not find the categories column of templates in the schema cache'. This indicates the Supabase database schema is missing the categories and tools columns as arrays. The import functionality returns proper structure but fails to actually insert/update due to schema mismatch."
+
+  - task: "Specific Import Endpoints (platforms, categories, tools, agents)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ WORKING: All specific import endpoints exist and handle requests properly: /api/import/platforms/preview, /api/import/platforms, /api/import/categories/preview, /api/import/categories, /api/import/tools/preview, /api/import/tools, /api/import/agents/preview, /api/import/agents. All return proper 400 errors for missing inputs and 422 for missing files."
+
+  - task: "Download Tracking API"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ WORKING: /api/templates/{id}/download endpoint working correctly. Successfully increments download count and returns confirmation message."
+
+  - task: "Search and Filter Functionality"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "✅ WORKING: Search functionality working for text queries ('IA', 'automação'). Platform filters working correctly (n8n, Make). Category and tool filters return 0 results (expected due to empty categories/tools arrays from schema issue). Pagination working correctly with different page sizes."
+
+  - task: "Facets Generation"
+    implemented: true
+    working: false
+    file: "/app/backend/server.py"
+    stuck_count: 1
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "❌ ISSUE: Facets generation partially working. Platforms facets showing 0 available (should show n8n, Make). Categories and tools facets showing 0 available. This is related to the schema issue where categories/tools arrays are empty and the get_distinct_platforms RPC function is missing from Supabase."
+
+  - task: "Error Handling and Validation"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "testing"
+          comment: "Minor: Error handling mostly working. Invalid UUID returns 500 (acceptable), non-existent UUID returns 404 (correct). CSV validation working properly. Some 500 errors for invalid file types in preview (should be 400) and Google Sheets URL conversion, but core functionality works."
+
+metadata:
+  created_by: "testing_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "CSV Import Templates API"
+    - "Facets Generation"
+  stuck_tasks:
+    - "CSV Import Templates API"
+    - "Facets Generation"
+  test_all: true
+  test_priority: "high_first"
+
+agent_communication:
+    - agent: "testing"
+      message: "COMPREHENSIVE TESTING COMPLETED: 38/40 tests passed (95% success rate). CRITICAL ISSUE IDENTIFIED: Supabase database schema is missing categories and tools columns as arrays in the templates table. This prevents CSV imports from working and causes facets to show 0 results. The migration from MongoDB to Supabase is incomplete - the schema needs to be updated to include categories and tools as array columns. All other endpoints are working correctly including pagination, search, filtering, and basic CRUD operations."
