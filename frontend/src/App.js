@@ -903,6 +903,11 @@ const Home = () => {
     setCurrentPage(1); // Reset to first page when searching
   };
 
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
   if (loading && templates.length === 0) {
     return (
       <div className="loading-container">
