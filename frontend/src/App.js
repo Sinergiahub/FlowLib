@@ -793,6 +793,75 @@ const TemplateDetailModal = ({ template, isOpen, onClose }) => {
   );
 };
 
+// Mass Download Section
+const MassDownloadSection = () => {
+  const downloadPackages = [
+    {
+      id: 1,
+      icon: "📽️",
+      title: "200 modelos profissionais com suporte de vídeo",
+      tags: ["Automação de negócios", "Criação de conteúdo", "Geração de leads"],
+      driveUrl: "https://drive.google.com/drive/folders/exemplo1"
+    },
+    {
+      id: 2,
+      icon: "🔥",
+      title: "Mais de 2.000 modelos prontos para uso para todas as necessidades",
+      tags: ["Geração de leads", "Marketing por e-mail", "Análise de dados"],
+      driveUrl: "https://drive.google.com/drive/folders/exemplo2"
+    },
+    {
+      id: 3,
+      icon: "📊",
+      title: "Mais de 3.000 modelos prontos para uso para cada fluxo de trabalho",
+      tags: ["Criação de conteúdo", "Marketing", "Vendas"],
+      driveUrl: "https://drive.google.com/drive/folders/exemplo3"
+    }
+  ];
+
+  const handleDownload = (driveUrl) => {
+    window.open(driveUrl, '_blank');
+  };
+
+  return (
+    <section className="mass-download-section">
+      <div className="container">
+        <div className="mass-download-header">
+          <h2>Baixe modelos em <span className="highlight">massa</span></h2>
+          <p>
+            Tenha acesso instantâneo a milhares de modelos profissionais de automação. Baixe 
+            coleções completas e acelere sua jornada de automação de fluxo de trabalho.
+          </p>
+        </div>
+        
+        <div className="download-packages-grid">
+          {downloadPackages.map((pkg) => (
+            <div key={pkg.id} className="download-package-card">
+              <div className="package-content">
+                <div className="package-icon">{pkg.icon}</div>
+                <h3 className="package-title">{pkg.title}</h3>
+                
+                <div className="package-tags">
+                  {pkg.tags.map((tag, index) => (
+                    <span key={index} className="package-tag">{tag}</span>
+                  ))}
+                </div>
+                
+                <button 
+                  className="download-button"
+                  onClick={() => handleDownload(pkg.driveUrl)}
+                >
+                  Baixe agora <ExternalLink size={16} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
 // Footer Component
 const Footer = () => {
   return (
