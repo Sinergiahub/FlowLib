@@ -644,14 +644,42 @@ async def preview_import(
         # Parse CSV
         df = pd.read_csv(StringIO(csv_content))
         
-        # Validate required columns
-        required_columns = ['action', 'slug']
+        # Validate required columns - MORE FLEXIBLE
+        required_columns = ['action']  # Only action is truly required
         missing_columns = [col for col in required_columns if col not in df.columns]
         if missing_columns:
             raise HTTPException(
                 status_code=400, 
-                detail=f"Colunas obrigatórias ausentes: {', '.join(missing_columns)}"
+                detail=f"Coluna obrigatória ausente: {', '.join(missing_columns)}"
             )
+        
+        # Auto-add missing common columns with defaults
+        if 'slug' not in df.columns and 'key' not in df.columns:
+            raise HTTPException(
+                status_code=400,
+                detail="É necessário ter pelo menos uma coluna 'slug' ou 'key' para identificar os registros"
+            )
+        
+        # If we have 'key' but not 'slug', use 'key' as 'slug'
+        if 'key' in df.columns and 'slug' not in df.columns:
+            df['slug'] = df['key']
+        
+        # Auto-add missing optional columns with defaults
+        optional_defaults = {
+            'title': 'Título não informado',
+            'platform': 'n8n',
+            'status': 'published',
+            'description': '',
+            'author_name': 'Admin',
+            'categories': '',
+            'tools': '',
+            'rating_avg': '',
+            'downloads_count': '0'
+        }
+        
+        for col, default_value in optional_defaults.items():
+            if col not in df.columns:
+                df[col] = default_value
         
         report.total_rows = len(df)
         
