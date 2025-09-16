@@ -1087,6 +1087,8 @@ const Home = () => {
                     key={template.id}
                     template={template}
                     onClick={handleTemplateClick}
+                    onFavoriteToggle={handleFavoriteToggle}
+                    onRating={handleRating}
                   />
                 ))}
               </div>
