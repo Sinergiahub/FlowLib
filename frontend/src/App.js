@@ -1092,6 +1092,32 @@ const Home = () => {
                   />
                 ))}
               </div>
+              
+              {/* Load More Section */}
+              {hasMore && (
+                <div className="load-more-section">
+                  <button 
+                    className={`load-more-button ${loadingMore ? 'loading' : ''}`}
+                    onClick={handleLoadMore}
+                    disabled={loadingMore}
+                  >
+                    {loadingMore ? (
+                      <>
+                        <div className="loading-spinner-small"></div>
+                        Carregando...
+                      </>
+                    ) : (
+                      <>
+                        <MoreHorizontal size={20} />
+                        Load More Templates • {totalItems - templates.length} more available
+                      </>
+                    )}
+                  </button>
+                  <div className="templates-counter">
+                    Showing {templates.length} of {totalItems} templates
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
