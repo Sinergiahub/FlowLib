@@ -81,24 +81,43 @@ class FlowLibAPITester:
         return success
 
     def test_get_templates(self):
-        """Test getting all templates"""
+        """Test getting all templates with pagination"""
         success, response = self.run_test(
-            "Get All Templates",
+            "Get All Templates (Paginated)",
             "GET",
             "templates",
             200
         )
-        if success and isinstance(response, list):
-            self.template_ids = [template.get('id') for template in response if template.get('id')]
-            print(f"   Found {len(response)} templates")
-            if response:
-                template = response[0]
-                required_fields = ['id', 'title', 'description', 'platform', 'author_name']
-                missing_fields = [field for field in required_fields if field not in template]
-                if missing_fields:
-                    print(f"   ⚠️  Missing fields in template: {missing_fields}")
-                else:
-                    print(f"   ✅ Template structure looks good")
+        if success and isinstance(response, dict):
+            # Check for paginated response structure
+            required_keys = ['items', 'total', 'page', 'page_size', 'total_pages', 'facets']
+            missing_keys = [key for key in required_keys if key not in response]
+            if missing_keys:
+                print(f"   ⚠️  Missing pagination keys: {missing_keys}")
+                success = False
+            else:
+                items = response.get('items', [])
+                self.template_ids = [template.get('id') for template in items if template.get('id')]
+                self.template_slugs = [template.get('slug') for template in items if template.get('slug')]
+                print(f"   Found {len(items)} templates (Total: {response.get('total', 0)})")
+                print(f"   Page {response.get('page', 1)} of {response.get('total_pages', 1)}")
+                
+                # Check facets structure
+                facets = response.get('facets', {})
+                facet_keys = ['platforms', 'categories', 'tools']
+                for key in facet_keys:
+                    if key in facets:
+                        print(f"   {key.capitalize()}: {len(facets[key])} available")
+                
+                if items:
+                    template = items[0]
+                    required_fields = ['id', 'slug', 'title', 'platform', 'status']
+                    missing_fields = [field for field in required_fields if field not in template]
+                    if missing_fields:
+                        print(f"   ⚠️  Missing fields in template: {missing_fields}")
+                    else:
+                        print(f"   ✅ Template structure looks good")
+                        print(f"   Sample template: '{template.get('title', 'N/A')}' ({template.get('platform', 'N/A')})")
         return success
 
     def test_get_template_by_id(self):
