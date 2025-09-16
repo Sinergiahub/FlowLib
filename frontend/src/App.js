@@ -871,7 +871,7 @@ const Home = () => {
     }, 300); // Reduced to 300ms
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, filters]);
+  }, [searchTerm, filters, showFeatured, showFavorites]);
 
   const loadInitialData = async () => {
     try {
