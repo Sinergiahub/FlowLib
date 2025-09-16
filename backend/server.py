@@ -677,11 +677,13 @@ async def get_templates(
     platform: Optional[str] = Query(None, description="Filter by platform"),
     category: Optional[str] = Query(None, description="Filter by category"),
     tool: Optional[str] = Query(None, description="Filter by tool"),
+    user_id: Optional[str] = Query(None, description="User ID for favorites and ratings"),
     page: int = Query(1, ge=1, description="Page number"),
-    page_size: int = Query(12, ge=1, le=50, description="Items per page")
+    page_size: int = Query(15, ge=1, le=50, description="Items per page")
 ):
-    """Get templates with advanced filtering and pagination"""
-    return get_templates_with_filters(
+    """Get templates with advanced filtering, pagination, and user data"""
+    return get_templates_with_user_data(
+        user_id=user_id,
         search=search,
         platform=platform,
         category=category,
