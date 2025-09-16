@@ -904,7 +904,7 @@ const Home = () => {
       
       const params = new URLSearchParams();
       params.append('page', pageToLoad.toString());
-      params.append('page_size', '15'); // Changed to 15 as requested
+      params.append('page_size', '4'); // Temporary: reduced for testing Load More
       params.append('user_id', userId); // Add user_id for favorites/ratings
       
       if (searchTerm) params.append('search', searchTerm);
