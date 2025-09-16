@@ -179,23 +179,47 @@ class FlowLibAPITester:
             print(f"   Found {len(response)} featured templates")
         return success
 
-    def test_search_functionality(self):
-        """Test search functionality"""
-        search_terms = ["IA", "SEO", "TikTok", "automação"]
+    def test_pagination_functionality(self):
+        """Test pagination functionality"""
+        print("\n🔍 Testing Pagination...")
+        
+        # Test different page sizes
+        page_sizes = [5, 10, 20]
         all_passed = True
         
-        for term in search_terms:
+        for page_size in page_sizes:
             success, response = self.run_test(
-                f"Search Templates - '{term}'",
+                f"Pagination - Page size {page_size}",
                 "GET",
                 "templates",
                 200,
-                params={"search": term}
+                params={"page": 1, "page_size": page_size}
             )
-            if success and isinstance(response, list):
-                print(f"   Found {len(response)} results for '{term}'")
-            all_passed = all_passed and success
+            if success and isinstance(response, dict):
+                items = response.get('items', [])
+                actual_size = len(items)
+                expected_size = min(page_size, response.get('total', 0))
+                
+                if actual_size <= page_size:
+                    print(f"   ✅ Page size {page_size}: Got {actual_size} items (expected ≤ {page_size})")
+                else:
+                    print(f"   ❌ Page size {page_size}: Got {actual_size} items (expected ≤ {page_size})")
+                    all_passed = False
+            else:
+                all_passed = False
+                
+        # Test page navigation
+        success, response = self.run_test(
+            "Pagination - Page 2",
+            "GET", 
+            "templates",
+            200,
+            params={"page": 2, "page_size": 5}
+        )
+        if success and isinstance(response, dict):
+            print(f"   Page 2 results: {len(response.get('items', []))} items")
             
+        all_passed = all_passed and success
         return all_passed
 
     def test_filter_functionality(self):
