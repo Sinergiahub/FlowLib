@@ -2,7 +2,7 @@ from fastapi import FastAPI, APIRouter, HTTPException, Query, UploadFile, File, 
 from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
+from supabase import create_client, Client
 import os
 import logging
 from pathlib import Path
@@ -19,10 +19,10 @@ import requests
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+# Supabase connection
+supabase_url = os.environ['SUPABASE_URL']
+supabase_key = os.environ['SUPABASE_SERVICE_KEY']
+supabase: Client = create_client(supabase_url, supabase_key)
 
 # Create the main app without a prefix
 app = FastAPI()
@@ -30,8 +30,7 @@ app = FastAPI()
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
-# Models
-# Models
+# Models (same as before)
 class User(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     display_name: str
@@ -95,14 +94,6 @@ class Template(BaseModel):
             raise ValueError('URL deve começar com http:// ou https://')
         return v
 
-class TemplateCreate(BaseModel):
-    title: str
-    description: str
-    platform: str
-    author_name: str = "Community"
-    categories: List[str] = []
-    tools: List[str] = []
-
 class ImportReport(BaseModel):
     inserted: int = 0
     updated: int = 0
@@ -139,107 +130,7 @@ class TemplateFacets(BaseModel):
     categories: List[str] 
     tools: List[str]
 
-# Initialize collections and sample data
-@app.on_event("startup")
-async def startup_db():
-    # Categories
-    categories = [
-        {"key": "produtividade", "name": "Produtividade"},
-        {"key": "marketing", "name": "Marketing"},
-        {"key": "vendas", "name": "Vendas"},
-        {"key": "redes-sociais", "name": "Redes Sociais"},
-        {"key": "atendimento", "name": "Atendimento"},
-        {"key": "leads", "name": "Geração de Leads"},
-        {"key": "pesquisa", "name": "Pesquisa"},
-        {"key": "ecommerce", "name": "E-commerce"},
-        {"key": "financas", "name": "Finanças"}
-    ]
-    
-    # Tools
-    tools = [
-        {"key": "openai", "name": "OpenAI"},
-        {"key": "slack", "name": "Slack"},
-        {"key": "google-sheets", "name": "Google Sheets"},
-        {"key": "webflow", "name": "Webflow"},
-        {"key": "voiceflow", "name": "Voiceflow"},
-        {"key": "adzuna", "name": "Adzuna API"},
-        {"key": "make", "name": "Make"},
-        {"key": "zapier", "name": "Zapier"},
-        {"key": "n8n", "name": "n8n"},
-        {"key": "telegram", "name": "Telegram"},
-        {"key": "discord", "name": "Discord"},
-        {"key": "notion", "name": "Notion"},
-        {"key": "airtable", "name": "Airtable"},
-        {"key": "stripe", "name": "Stripe"},
-        {"key": "gmail", "name": "Gmail"}
-    ]
-    
-    # Templates (existing ones converted to new schema)
-    templates = [
-        {
-            "id": str(uuid.uuid4()),
-            "slug": "assistente-virtual-tiktok",
-            "title": "Assistente Virtual para TikTok",
-            "description": "Sistema completo de IA que gera clips virais do TikTok automaticamente, criando conteúdo envolvente a partir de temas populares.",
-            "platform": "n8n",
-            "author_name": "AutoFlow Pro",
-            "preview_image_url": "https://images.unsplash.com/photo-1531403009284-440f080d1e12",
-            "tutorial_url": "https://youtube.com/watch?v=demo1",
-            "downloads_count": 2847,
-            "rating_avg": 4.8,
-            "categories": ["redes-sociais", "marketing"],
-            "tools": ["openai", "n8n"],
-            "status": "published",
-            "created_at": datetime.now(timezone.utc),
-            "updated_at": datetime.now(timezone.utc)
-        },
-        {
-            "id": str(uuid.uuid4()),
-            "slug": "6k-por-mes-ia",
-            "title": "$6k Por Mês com IA",
-            "description": "Template de automação para geração de renda usando IA. Criação de modelos de negócio escaláveis com inteligência artificial.",
-            "platform": "Make",
-            "author_name": "AI Revenue",
-            "preview_image_url": "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
-            "tutorial_url": "https://youtube.com/watch?v=demo2",
-            "downloads_count": 1923,
-            "rating_avg": 4.7,
-            "categories": ["produtividade", "vendas"],
-            "tools": ["openai", "make"],
-            "status": "published",
-            "created_at": datetime.now(timezone.utc),
-            "updated_at": datetime.now(timezone.utc)
-        },
-        {
-            "id": str(uuid.uuid4()),
-            "slug": "100-automacao-seo",
-            "title": "100% Automação SEO",
-            "description": "Sistema de automação completo para SEO. Análise de palavras-chave, criação de conteúdo e otimização automática de sites.",
-            "platform": "Zapier",
-            "author_name": "SEO Master",
-            "preview_image_url": "https://images.unsplash.com/photo-1518770660439-4636190af475",
-            "tutorial_url": "https://youtube.com/watch?v=demo3",
-            "downloads_count": 3156,
-            "rating_avg": 4.9,
-            "categories": ["marketing", "produtividade"],
-            "tools": ["openai", "google-sheets", "zapier"],
-            "status": "published",
-            "created_at": datetime.now(timezone.utc),
-            "updated_at": datetime.now(timezone.utc)
-        }
-    ]
-    
-    # Insert data if collections are empty
-    if await db.categories.count_documents({}) == 0:
-        await db.categories.insert_many(categories)
-    
-    if await db.tools.count_documents({}) == 0:
-        await db.tools.insert_many(tools)
-    
-    if await db.templates.count_documents({}) == 0:
-        await db.templates.insert_many(templates)
-
-# CSV Import utilities
+# CSV Import utilities (same as before)
 def safe_str_strip(value) -> str:
     """Safely convert value to string and strip, handling NaN and None"""
     if value is None or pd.isna(value):
@@ -347,8 +238,8 @@ async def preview_template_row(row: Dict[str, Any], action: str, line_number: in
         
         if action == "delete":
             # Check if template exists for deletion
-            existing = await db.templates.find_one({"slug": slug})
-            if existing:
+            existing = supabase.table('templates').select('*').eq('slug', slug).execute()
+            if existing.data:
                 preview_row.status = "delete"
                 preview_row.message = f"Template '{title or slug}' será deletado"
             else:
@@ -362,7 +253,7 @@ async def preview_template_row(row: Dict[str, Any], action: str, line_number: in
             return preview_row
         
         # Check if template exists
-        existing = await db.templates.find_one({"slug": slug})
+        existing = supabase.table('templates').select('*').eq('slug', slug).execute()
         
         # Prepare preview data
         preview_data = {
@@ -383,7 +274,7 @@ async def preview_template_row(row: Dict[str, Any], action: str, line_number: in
         
         preview_row.data = preview_data
         
-        if existing:
+        if existing.data:
             preview_row.status = "update"
             preview_row.message = f"Template '{title}' será atualizado"
         else:
@@ -408,8 +299,8 @@ async def process_template_row(row: Dict[str, Any], action: str) -> Dict[str, An
         
         if action == "delete":
             # Delete template by slug
-            delete_result = await db.templates.delete_one({"slug": slug})
-            if delete_result.deleted_count > 0:
+            delete_result = supabase.table('templates').delete().eq('slug', slug).execute()
+            if delete_result.data:
                 result["success"] = True
                 result["action"] = "deleted"
             else:
@@ -441,7 +332,7 @@ async def process_template_row(row: Dict[str, Any], action: str) -> Dict[str, An
             "external_id": safe_str_strip_or_none(row.get('external_id')),
             "categories": parse_pipe_separated(row.get('categories', '')),
             "tools": parse_pipe_separated(row.get('tools', '')),
-            "updated_at": datetime.now(timezone.utc)
+            "updated_at": datetime.now(timezone.utc).isoformat()
         }
         
         # Handle numeric fields
@@ -452,23 +343,20 @@ async def process_template_row(row: Dict[str, Any], action: str) -> Dict[str, An
             template_data["downloads_count"] = int(row['downloads_count'])
         
         # Check if template exists
-        existing = await db.templates.find_one({"slug": slug})
+        existing = supabase.table('templates').select('*').eq('slug', slug).execute()
         
-        if existing:
+        if existing.data:
             # Update existing template
-            await db.templates.update_one(
-                {"slug": slug},
-                {"$set": template_data}
-            )
+            update_result = supabase.table('templates').update(template_data).eq('slug', slug).execute()
             result["success"] = True
             result["action"] = "updated"
         else:
             # Insert new template
             template_data["id"] = str(uuid.uuid4())
-            template_data["created_at"] = datetime.now(timezone.utc)
+            template_data["created_at"] = datetime.now(timezone.utc).isoformat()
             template_data.setdefault("downloads_count", 0)
             
-            await db.templates.insert_one(template_data)
+            insert_result = supabase.table('templates').insert(template_data).execute()
             result["success"] = True
             result["action"] = "inserted"
         
@@ -478,42 +366,38 @@ async def process_template_row(row: Dict[str, Any], action: str) -> Dict[str, An
         result["errors"].append(f"Erro ao processar linha: {str(e)}")
         return result
 
-async def get_template_facets() -> TemplateFacets:
+def get_template_facets() -> TemplateFacets:
     """Get available facets for filtering"""
     try:
         # Get distinct platforms
-        platforms = await db.templates.distinct("platform", {"status": "published"})
+        platforms_result = supabase.rpc('get_distinct_platforms').execute()
+        platforms = platforms_result.data if platforms_result.data else []
         
-        # Get distinct categories from all templates
-        categories_pipeline = [
-            {"$match": {"status": "published"}},
-            {"$unwind": "$categories"},
-            {"$group": {"_id": "$categories"}},
-            {"$sort": {"_id": 1}}
-        ]
-        categories_result = await db.templates.aggregate(categories_pipeline).to_list(None)
-        categories = [item["_id"] for item in categories_result if item["_id"]]
+        # Get distinct categories (we'll use a simple query since Supabase RPC might not be set up)
+        templates = supabase.table('templates').select('categories, tools, platform').eq('status', 'published').execute()
         
-        # Get distinct tools from all templates
-        tools_pipeline = [
-            {"$match": {"status": "published"}},
-            {"$unwind": "$tools"},
-            {"$group": {"_id": "$tools"}},
-            {"$sort": {"_id": 1}}
-        ]
-        tools_result = await db.templates.aggregate(tools_pipeline).to_list(None)
-        tools = [item["_id"] for item in tools_result if item["_id"]]
+        all_categories = set()
+        all_tools = set()
+        all_platforms = set()
+        
+        for template in templates.data:
+            if template.get('categories'):
+                all_categories.update(template['categories'])
+            if template.get('tools'):
+                all_tools.update(template['tools'])
+            if template.get('platform'):
+                all_platforms.add(template['platform'])
         
         return TemplateFacets(
-            platforms=sorted(platforms) if platforms else [],
-            categories=categories,
-            tools=tools
+            platforms=sorted(list(all_platforms)),
+            categories=sorted(list(all_categories)),
+            tools=sorted(list(all_tools))
         )
     except Exception as e:
         logger.error(f"Error getting facets: {str(e)}")
         return TemplateFacets(platforms=[], categories=[], tools=[])
 
-async def get_templates_with_filters(
+def get_templates_with_filters(
     search: Optional[str] = None,
     platform: Optional[str] = None,
     category: Optional[str] = None,
@@ -523,47 +407,50 @@ async def get_templates_with_filters(
 ) -> PaginatedTemplateResponse:
     """Get templates with filtering and pagination"""
     
-    # Build filter query
-    filter_query = {"status": "published"}
-    
-    # Add platform filter
-    if platform:
-        filter_query["platform"] = platform
-    
-    # Add category filter
-    if category:
-        filter_query["categories"] = {"$in": [category]}
-    
-    # Add tool filter  
-    if tool:
-        filter_query["tools"] = {"$in": [tool]}
-    
-    # Add search filter
-    if search:
-        search_regex = {"$regex": search, "$options": "i"}
-        filter_query["$or"] = [
-            {"title": search_regex},
-            {"description": search_regex},
-            {"tags": search_regex}
-        ]
-    
     try:
-        # Get total count
-        total = await db.templates.count_documents(filter_query)
+        # Start with base query
+        query = supabase.table('templates').select('*', count='exact').eq('status', 'published')
         
-        # Calculate pagination
+        # Add filters
+        if platform:
+            query = query.eq('platform', platform)
+        
+        if category:
+            query = query.contains('categories', [category])
+        
+        if tool:
+            query = query.contains('tools', [tool])
+        
+        if search:
+            # For text search, we'll use ilike on title and description
+            query = query.or_(f'title.ilike.%{search}%,description.ilike.%{search}%')
+        
+        # Get total count first
+        count_result = query.execute()
+        total = count_result.count if hasattr(count_result, 'count') else len(count_result.data)
+        
+        # Apply pagination and ordering
         skip = (page - 1) * page_size
-        total_pages = (total + page_size - 1) // page_size
+        paginated_query = query.order('downloads_count', desc=True).range(skip, skip + page_size - 1)
         
-        # Get templates with pagination
-        templates_cursor = db.templates.find(filter_query).sort("downloads_count", -1).skip(skip).limit(page_size)
-        templates = await templates_cursor.to_list(page_size)
+        result = paginated_query.execute()
+        templates = result.data
         
         # Convert to Template objects
-        template_items = [Template(**template) for template in templates]
+        template_items = []
+        for template in templates:
+            # Convert datetime strings back to datetime objects
+            if isinstance(template.get('created_at'), str):
+                template['created_at'] = datetime.fromisoformat(template['created_at'].replace('Z', '+00:00'))
+            if isinstance(template.get('updated_at'), str):
+                template['updated_at'] = datetime.fromisoformat(template['updated_at'].replace('Z', '+00:00'))
+            template_items.append(Template(**template))
+        
+        # Calculate pagination
+        total_pages = (total + page_size - 1) // page_size
         
         # Get facets
-        facets = await get_template_facets()
+        facets = get_template_facets()
         
         return PaginatedTemplateResponse(
             items=template_items,
@@ -588,9 +475,8 @@ async def get_templates_with_filters(
             total_pages=0,
             facets={"platforms": [], "categories": [], "tools": []}
         )
-    return {"message": "AutomaçãoHub API - Biblioteca de Automações"}
 
-# CSV Import endpoint
+# API Endpoints
 @api_router.post("/import/templates", response_model=ImportReport)
 async def import_templates(file: UploadFile = File(...)):
     """Import templates from CSV file"""
@@ -657,7 +543,6 @@ async def import_templates(file: UploadFile = File(...)):
         logger.error(f"Erro inesperado no import: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erro interno do servidor: {str(e)}")
 
-# CSV Import Preview endpoint
 @api_router.post("/import/preview", response_model=PreviewReport)
 async def preview_import(
     file: Optional[UploadFile] = File(None),
@@ -762,7 +647,6 @@ async def preview_import(
         logger.error(f"Erro inesperado no preview: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Erro interno do servidor: {str(e)}")
 
-# Existing endpoints with updated schema
 @api_router.get("/templates", response_model=PaginatedTemplateResponse)
 async def get_templates(
     search: Optional[str] = Query(None, description="Search in title, description, tags"),
@@ -773,7 +657,7 @@ async def get_templates(
     page_size: int = Query(12, ge=1, le=50, description="Items per page")
 ):
     """Get templates with advanced filtering and pagination"""
-    return await get_templates_with_filters(
+    return get_templates_with_filters(
         search=search,
         platform=platform,
         category=category,
@@ -782,76 +666,69 @@ async def get_templates(
         page_size=page_size
     )
 
-# Legacy endpoint for backward compatibility
-@api_router.get("/templates/legacy", response_model=List[Template])
-async def get_templates_legacy(
-    platform: Optional[str] = Query(None),
-    category: Optional[str] = Query(None),
-    tool: Optional[str] = Query(None),
-    search: Optional[str] = Query(None),
-    limit: int = Query(50, le=100)
-):
-    """Legacy templates endpoint for backward compatibility"""
-    result = await get_templates_with_filters(
-        search=search,
-        platform=platform,
-        category=category,
-        tool=tool,
-        page=1,
-        page_size=limit
-    )
-    return result.items
-
 @api_router.get("/templates/{template_id}", response_model=Template)
 async def get_template(template_id: str):
-    template = await db.templates.find_one({"id": template_id})
-    if not template:
+    result = supabase.table('templates').select('*').eq('id', template_id).execute()
+    if not result.data:
         raise HTTPException(status_code=404, detail="Template não encontrado")
+    
+    template = result.data[0]
+    # Convert datetime strings
+    if isinstance(template.get('created_at'), str):
+        template['created_at'] = datetime.fromisoformat(template['created_at'].replace('Z', '+00:00'))
+    if isinstance(template.get('updated_at'), str):
+        template['updated_at'] = datetime.fromisoformat(template['updated_at'].replace('Z', '+00:00'))
+    
     return Template(**template)
 
 @api_router.get("/templates/slug/{slug}", response_model=Template)
 async def get_template_by_slug(slug: str):
-    template = await db.templates.find_one({"slug": slug})
-    if not template:
+    result = supabase.table('templates').select('*').eq('slug', slug).execute()
+    if not result.data:
         raise HTTPException(status_code=404, detail="Template não encontrado")
+    
+    template = result.data[0]
+    # Convert datetime strings
+    if isinstance(template.get('created_at'), str):
+        template['created_at'] = datetime.fromisoformat(template['created_at'].replace('Z', '+00:00'))
+    if isinstance(template.get('updated_at'), str):
+        template['updated_at'] = datetime.fromisoformat(template['updated_at'].replace('Z', '+00:00'))
+    
     return Template(**template)
 
 @api_router.get("/categories", response_model=List[Category])
 async def get_categories():
-    categories = await db.categories.find().to_list(100)
-    # Convert MongoDB documents to Category objects, mapping id to key
-    result = []
-    for category in categories:
-        category_data = {k: v for k, v in category.items() if k != '_id'}
-        if 'id' in category_data:
-            category_data['key'] = category_data.pop('id')  # Map id to key
-        result.append(Category(**category_data))
-    return result
+    result = supabase.table('categories').select('*').execute()
+    return [Category(key=cat['key'], name=cat['name']) for cat in result.data]
 
 @api_router.get("/tools", response_model=List[Tool])
 async def get_tools():
-    tools = await db.tools.find().to_list(100)
-    # Convert MongoDB documents to Tool objects, mapping id to key
-    result = []
-    for tool in tools:
-        tool_data = {k: v for k, v in tool.items() if k != '_id'}
-        if 'id' in tool_data:
-            tool_data['key'] = tool_data.pop('id')  # Map id to key
-        result.append(Tool(**tool_data))
-    return result
+    result = supabase.table('tools').select('*').execute()
+    return [Tool(key=tool['key'], name=tool['name']) for tool in result.data]
 
 @api_router.get("/featured", response_model=List[Template])
 async def get_featured_templates():
-    templates = await db.templates.find({"status": "published"}).sort("rating_avg", -1).limit(6).to_list(6)
-    return [Template(**template) for template in templates]
+    result = supabase.table('templates').select('*').eq('status', 'published').order('rating_avg', desc=True).limit(6).execute()
+    
+    templates = []
+    for template in result.data:
+        # Convert datetime strings
+        if isinstance(template.get('created_at'), str):
+            template['created_at'] = datetime.fromisoformat(template['created_at'].replace('Z', '+00:00'))
+        if isinstance(template.get('updated_at'), str):
+            template['updated_at'] = datetime.fromisoformat(template['updated_at'].replace('Z', '+00:00'))
+        templates.append(Template(**template))
+    
+    return templates
 
 @api_router.post("/templates/{template_id}/download")
 async def download_template(template_id: str):
     # Increment download count
-    await db.templates.update_one(
-        {"id": template_id},
-        {"$inc": {"downloads_count": 1}}
-    )
+    result = supabase.table('templates').select('downloads_count').eq('id', template_id).execute()
+    if result.data:
+        current_count = result.data[0].get('downloads_count', 0)
+        supabase.table('templates').update({'downloads_count': current_count + 1}).eq('id', template_id).execute()
+    
     return {"message": "Download registrado"}
 
 # Include router
@@ -871,7 +748,3 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
-
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
