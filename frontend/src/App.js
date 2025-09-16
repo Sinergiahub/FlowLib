@@ -787,13 +787,24 @@ const Home = () => {
   const [categories, setCategories] = useState([]);
   const [tools, setTools] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
   const [usingFallback, setUsingFallback] = useState(false);
+  const [userId, setUserId] = useState(() => {
+    // Generate or get persistent user ID for favorites/ratings
+    let id = localStorage.getItem('flowlib_user_id');
+    if (!id) {
+      id = 'user_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('flowlib_user_id', id);
+    }
+    return id;
+  });
   const [filters, setFilters] = useState({
     platforms: [],
     categories: [],
