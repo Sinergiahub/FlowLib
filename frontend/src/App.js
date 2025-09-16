@@ -522,59 +522,110 @@ const FiltersSidebar = ({ categories, tools, filters, onFilterChange }) => {
   );
 };
 
-// Template Card
-const TemplateCard = ({ template, onClick }) => {
+// Template Card Component
+const TemplateCard = ({ template, onClick, onFavoriteToggle, onRating }) => {
   const getPlatformIcon = (platform) => {
-    switch (platform) {
-      case 'n8n': return <Bot size={16} />;
-      case 'Make': return <Layers size={16} />;
-      case 'Zapier': return <Zap size={16} />;
-      case 'Voiceflow': return <Users size={16} />;
-      default: return <Bot size={16} />;
+    const platformLower = platform.toLowerCase();
+    switch (platformLower) {
+      case 'n8n':
+        return <Layers className="platform-icon" />;
+      case 'make':
+        return <Zap className="platform-icon" />;
+      case 'zapier':
+        return <Bot className="platform-icon" />;
+      default:
+        return <Layers className="platform-icon" />;
     }
+  };
+
+  const handleFavoriteClick = (e) => {
+    e.stopPropagation();
+    onFavoriteToggle(template.id);
+  };
+
+  const handleRatingClick = (e, rating) => {
+    e.stopPropagation();
+    onRating(template.id, rating);
+  };
+
+  const renderStars = () => {
+    return (
+      <div className="template-rating-interactive">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            size={16}
+            className={`star-interactive ${
+              template.user_rating && star <= template.user_rating
+                ? 'star-filled'
+                : template.rating_avg && star <= Math.round(template.rating_avg)
+                ? 'star-avg'
+                : 'star-empty'
+            }`}
+            onClick={(e) => handleRatingClick(e, star)}
+          />
+        ))}
+        <span className="rating-text">
+          {template.rating_avg ? template.rating_avg.toFixed(1) : 'N/A'}
+        </span>
+      </div>
+    );
   };
 
   return (
     <div className="template-card" onClick={() => onClick(template)}>
-      <div className="template-image">
-        <img src={template.preview_url} alt={template.title} />
-        <div className="template-overlay">
-          <div className="platform-badge">
-            {getPlatformIcon(template.platform)}
-            <span>{template.platform}</span>
-          </div>
+      <div className="template-header">
+        <div className="template-platform">
+          {getPlatformIcon(template.platform)}
+          <span>{template.platform}</span>
         </div>
+        <button 
+          className={`favorite-button ${template.is_favorited ? 'favorited' : ''}`}
+          onClick={handleFavoriteClick}
+        >
+          <Heart 
+            size={18} 
+            fill={template.is_favorited ? '#ff4444' : 'transparent'}
+            stroke={template.is_favorited ? '#ff4444' : 'currentColor'}
+          />
+        </button>
+      </div>
+      
+      <div className="template-image">
+        <img 
+          src={template.preview_image_url || template.preview_url || 'https://images.unsplash.com/photo-1518770660439-4636190af475'} 
+          alt={template.title}
+          onError={(e) => {
+            e.target.src = 'https://images.unsplash.com/photo-1518770660439-4636190af475';
+          }}
+        />
       </div>
       
       <div className="template-content">
         <h3 className="template-title">{template.title}</h3>
         <p className="template-description">
-          {template.description.substring(0, 120)}...
+          {template.description || template.shortDescription || 'Descrição não disponível'}
         </p>
         
-        <div className="template-meta">
-          <span className="author">Por {template.author_name}</span>
-          <div className="template-stats">
-            <span className="downloads">
-              <Download size={14} />
-              {template.downloads_count.toLocaleString()}
-            </span>
-            <span className="rating">
-              <Star size={14} />
-              {template.rating_avg}
-            </span>
+        <div className="template-author">
+          <Users size={14} />
+          <span>{template.author_name || 'Community'}</span>
+        </div>
+        
+        <div className="template-stats">
+          <div className="stat">
+            <Download size={14} />
+            <span>{(template.downloads_count || 0).toLocaleString()}</span>
           </div>
+          {renderStars()}
         </div>
         
         <div className="template-tags">
-          {template.categories.slice(0, 2).map((category) => (
-            <span key={category} className="tag">{category}</span>
+          {(template.categories || []).slice(0, 2).map((category) => (
+            <span key={category} className="tag category-tag">{category}</span>
           ))}
-        </div>
-        
-        <div className="template-tools">
-          {template.tools.slice(0, 3).map((tool) => (
-            <span key={tool} className="tool-tag">{tool}</span>
+          {(template.tools || []).slice(0, 2).map((tool) => (
+            <span key={tool} className="tag tool-tag">{tool}</span>
           ))}
         </div>
       </div>
